@@ -137,6 +137,7 @@ select, input[type=date] {
   var selectedId = null;
   var currentList = [];
   var btcPrice = 0;
+  var currentAvg = 0;
 
   function fmt(n) { return "$" + Number(n).toLocaleString(); }
   function today() {
@@ -194,6 +195,7 @@ select, input[type=date] {
     var confirmed = list.filter(function(y) { return y.status !== "pending" && y.price > 0; });
     if (confirmed.length > 0) {
       var avg = Math.round(confirmed.reduce(function(s,y){ return s + y.price; }, 0) / confirmed.length);
+      currentAvg = avg; // ← 追加
       document.getElementById("s-avg").textContent = fmt(avg);
       if (btcPrice === 0) buildSelect("in-price", avg);
     } else {
@@ -230,8 +232,10 @@ select, input[type=date] {
     selectedId = rowIndex;
     document.getElementById("action-bar").classList.remove("hidden");
     document.getElementById("action-title").textContent = "槍" + num + (isPending ? "　確認中" : "　取得：" + fmt(price));
-    buildSelect("update-price-select", btcPrice > 0 ? btcPrice : 85000);
-    buildSelect("sell-select", price > 0 ? price : 85000);
+    buildSelect("update-price-select", btcPrice > 0 ? btcPrice : currentAvg);
+    buildSelect("sell-select", isPending ? (btcPrice > 0 ? btcPrice : currentAvg) : (price > 0 ? price : currentAvg));
+    // 初期化部分
+
     // 確認中なら価格更新を優先、そうでなければ売却を優先
     switchTab(isPending ? "update" : "sell");
     renderList(currentList);
@@ -282,7 +286,7 @@ select, input[type=date] {
   }
 
   document.getElementById("in-date").value = today();
-  buildSelect("in-price", 85000);
+  buildSelect("in-price", currentAvg > 0 ? currentAvg : 85000);
   fetchBtcPrice();
   loadList();
 </script>
