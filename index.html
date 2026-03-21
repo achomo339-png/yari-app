@@ -72,6 +72,11 @@ select, input[type=date] {
 .loading { text-align: center; padding: 30px; color: #9aa0a6; font-size: 16px; }
 .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #202124; color: #fff; padding: 12px 24px; border-radius: 10px; font-size: 15px; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; z-index: 100; max-width: 90vw; }
 .toast.show { opacity: 1; }
+.tab-bar { display: flex; margin-bottom: 10px; border-bottom: 2px solid #dadce0; }
+.tab { flex: 1; text-align: center; padding: 8px; font-size: 14px; font-weight: 600; color: #5f6368; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+.tab.active { color: #1a73e8; border-bottom-color: #1a73e8; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
 </style>
 </head>
 <body>
@@ -90,13 +95,29 @@ select, input[type=date] {
 
 <div class="action-bar hidden" id="action-bar">
   <div class="action-title" id="action-title"></div>
-  <div class="action-sell-row">
-    <span class="action-sell-label">売却価格：</span>
-    <select id="sell-select"></select>
+  <div class="tab-bar">
+    <div class="tab" id="tab-update" onclick="switchTab('update')">価格更新</div>
+    <div class="tab" id="tab-sell" onclick="switchTab('sell')">売却</div>
   </div>
-  <div class="action-buttons">
-    <button class="btn-cancel" onclick="clearSelection()">取消</button>
-    <button class="btn-confirm" onclick="confirmSell()">売却済みにする</button>
+  <div class="tab-content" id="content-update">
+    <div class="action-sell-row">
+      <span class="action-sell-label">約定価格：</span>
+      <select id="update-price-select"></select>
+    </div>
+    <div class="action-buttons">
+      <button class="btn-cancel" onclick="clearSelection()">取消</button>
+      <button class="btn-confirm" style="background:#f29900;" onclick="confirmUpdate()">価格を更新する</button>
+    </div>
+  </div>
+  <div class="tab-content" id="content-sell">
+    <div class="action-sell-row">
+      <span class="action-sell-label">売却価格：</span>
+      <select id="sell-select"></select>
+    </div>
+    <div class="action-buttons">
+      <button class="btn-cancel" onclick="clearSelection()">取消</button>
+      <button class="btn-confirm" onclick="confirmSell()">売却済みにする</button>
+    </div>
   </div>
 </div>
 
@@ -189,7 +210,7 @@ select, input[type=date] {
         var priceDisplay = isPending
           ? '<span style="color:#f29900;font-weight:700;">確認中</span>'
           : fmt(y.price);
-        html += '<div class="yari-card' + (isSel ? ' selected' : '') + '" onclick="selectYari(' + y.id + ',' + y.price + ',\'' + y.date + '\',' + y.sellPrice + ',' + num + ')">';
+        html += '<div class="yari-card' + (isSel ? ' selected' : '') + '" onclick="selectYari(' + y.rowIndex + ',' + y.price + ',\'' + y.date + '\',' + y.sellPrice + ',' + num + ',' + isPending + ')">';
         html += '<div class="yari-top"><span class="badge badge-wait">' + num + '位</span><span class="yari-price">' + priceDisplay + '</span><span class="yari-date">' + y.date + '</span></div>';
         html += '<div class="yari-sub"><span class="sell-label">取得数量：</span><span class="sell-val">' + (y.qty > 0 ? y.qty + " BTC" : "—") + '</span>' + (isSel ? '<span class="selected-mark">✓ 選択中</span>' : '') + '</div>';
         html += '</div>';
@@ -198,12 +219,21 @@ select, input[type=date] {
     html += '</div>';
     document.getElementById("yari-section").innerHTML = html;
   }
-  function selectYari(id, price, date, sellPrice, num) {
-    if (selectedId === id) { clearSelection(); return; }
-    selectedId = id;
+  function switchTab(tab) {
+    document.getElementById("tab-update").classList.toggle("active", tab === "update");
+    document.getElementById("tab-sell").classList.toggle("active", tab === "sell");
+    document.getElementById("content-update").classList.toggle("active", tab === "update");
+    document.getElementById("content-sell").classList.toggle("active", tab === "sell");
+  }
+  function selectYari(rowIndex, price, date, sellPrice, num, isPending) {
+    if (selectedId === rowIndex) { clearSelection(); return; }
+    selectedId = rowIndex;
     document.getElementById("action-bar").classList.remove("hidden");
-    document.getElementById("action-title").textContent = "槍" + num + "　取得：" + fmt(price);
-    buildSelect("sell-select", price);
+    document.getElementById("action-title").textContent = "槍" + num + (isPending ? "　確認中" : "　取得：" + fmt(price));
+    buildSelect("update-price-select", btcPrice > 0 ? btcPrice : 85000);
+    buildSelect("sell-select", price > 0 ? price : 85000);
+    // 確認中なら価格更新を優先、そうでなければ売却を優先
+    switchTab(isPending ? "update" : "sell");
     renderList(currentList);
     document.getElementById("action-bar").scrollIntoView({ behavior: "smooth" });
   }
@@ -212,8 +242,21 @@ select, input[type=date] {
     document.getElementById("action-bar").classList.add("hidden");
     renderList(currentList);
   }
+  function confirmUpdate() {
+    var y = currentList.find(function(x) { return x.rowIndex === selectedId; });
+    if (!y) return;
+    var price = parseFloat(document.getElementById("update-price-select").value);
+    document.getElementById("action-bar").classList.add("hidden");
+    fetch(WEBAPP_URL + "?action=updatePrice&rowIndex=" + y.rowIndex + "&price=" + price)
+      .then(function(r) { return r.json(); })
+      .then(function(res) {
+        if (res.success) { showToast("価格更新：" + fmt(price)); selectedId = null; loadList(); }
+        else { showToast("エラー：" + (res.error || "不明")); }
+      })
+      .catch(function() { showToast("通信エラー"); });
+  }  
   function confirmSell() {
-    var y = currentList.find(function(x) { return x.id === selectedId; });
+    var y = currentList.find(function(x) { return x.rowIndex === selectedId; });
     if (!y) return;
     var sellPrice = parseFloat(document.getElementById("sell-select").value);
     document.getElementById("action-bar").classList.add("hidden");
