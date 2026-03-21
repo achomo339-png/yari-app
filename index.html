@@ -180,14 +180,24 @@ select, input[type=date] {
       });
   }
   function renderList(list) {
-    //list.sort(function(a, b) { return b.price - a.price; });
-    // 確認中を上、価格あり는安い順
     list.sort(function(a, b) {
       var aPending = a.status === "pending";
       var bPending = b.status === "pending";
       if (aPending && !bPending) return -1;
       if (!aPending && bPending) return 1;
-      return a.price - b.price; // 安い順
+    
+      // 経過日数を計算
+      var now = new Date(); now.setHours(0,0,0,0);
+      var aAcq = new Date(a.date); aAcq.setHours(0,0,0,0);
+      var bAcq = new Date(b.date); bAcq.setHours(0,0,0,0);
+      var aDays = Math.round((now - aAcq) / 86400000);
+      var bDays = Math.round((now - bAcq) / 86400000);
+      var aOdd = aDays % 2 !== 0;
+      var bOdd = bDays % 2 !== 0;
+    
+      if (aOdd && !bOdd) return 1;
+      if (!aOdd && bOdd) return -1;
+      return a.price - b.price; // 同グループ内は安い順
     });
     currentList = list;
     var count = list.length;
@@ -207,12 +217,19 @@ select, input[type=date] {
     } else {
       list.forEach(function(y, i) {
         var num = i + 1;
-        var isSel = y.id === selectedId;
+        var isSel = y.rowIndex === selectedId;
         var isPending = y.status === "pending";
+      
+        var now = new Date(); now.setHours(0,0,0,0);
+        var acq = new Date(y.date); acq.setHours(0,0,0,0);
+        var days = Math.round((now - acq) / 86400000);
+        var isOdd = days % 2 !== 0;
+      
         var priceDisplay = isPending
           ? '<span style="color:#f29900;font-weight:700;">確認中</span>'
           : fmt(y.price);
-        html += '<div class="yari-card' + (isSel ? ' selected' : '') + '" onclick="selectYari(' + y.rowIndex + ',' + y.price + ',\'' + y.date + '\',' + y.sellPrice + ',' + num + ',' + isPending + ')">';
+      
+        html += '<div class="yari-card' + (isSel ? ' selected' : '') + '" style="' + (isOdd ? 'opacity:0.4;' : '') + '" onclick="selectYari(' + y.rowIndex + ',' + y.price + ',\'' + y.date + '\',' + y.sellPrice + ',' + num + ',' + isPending + ')">';
         html += '<div class="yari-top"><span class="badge badge-wait">' + num + '位</span><span class="yari-price">' + priceDisplay + '</span><span class="yari-date">' + y.date + '</span></div>';
         html += '<div class="yari-sub"><span class="sell-label">取得数量：</span><span class="sell-val">' + (y.qty > 0 ? y.qty + " BTC" : "—") + '</span>' + (isSel ? '<span class="selected-mark">✓ 選択中</span>' : '') + '</div>';
         html += '</div>';
