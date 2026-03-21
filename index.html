@@ -77,6 +77,8 @@ select, input[type=date] {
 .tab.active { color: #1a73e8; border-bottom-color: #1a73e8; }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
+/* 追加したスタイル */
+.upload-label { display: block; background: #f8f9fa; border: 2px dashed #dadce0; padding: 15px; border-radius: 10px; color: #1a73e8; font-weight: 700; cursor: pointer; margin-bottom: 10px; text-align: center; }
 </style>
 </head>
 <body>
@@ -122,7 +124,14 @@ select, input[type=date] {
 </div>
 
 <div class="add-section">
-  <div class="section-header" style="padding:0 0 6px;">槍を追加</div>
+  <div class="section-header" style="padding:0 0 6px;">スクショで追加</div>
+  <div class="add-card" style="margin-bottom:15px;">
+    <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="updateFileName()">
+    <label for="fileInput" class="upload-label" id="fileLabel">📸 スクショを選択</label>
+    <button class="btn-add" style="background:#34a853;" onclick="uploadScreenshot()">AI解析へ送信</button>
+  </div>
+
+  <div class="section-header" style="padding:0 0 6px;">手動で約定追加</div>
   <div class="add-card">
     <div style="margin-bottom:8px;"><select id="in-price"></select></div>
     <div style="margin-bottom:10px;"><input type="date" id="in-date" /></div>
@@ -150,6 +159,36 @@ select, input[type=date] {
     t.classList.add("show");
     setTimeout(function() { t.classList.remove("show"); }, 2500);
   }
+
+  // スクショ送信用の関数を追加
+  function updateFileName() {
+    const file = document.getElementById('fileInput').files[0];
+    if (file) document.getElementById('fileLabel').innerText = "✓ " + file.name;
+  }
+
+  function uploadScreenshot() {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    if (!file) { showToast("画像を選んでくれ！"); return; }
+    
+    showToast("アップロード中...");
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      google.script.run
+        .withSuccessHandler(msg => {
+          showToast(msg);
+          fileInput.value = "";
+          document.getElementById('fileLabel').innerText = "📸 スクショを選択";
+        })
+        .withFailureHandler(err => {
+          showToast("エラー: " + err);
+        })
+        .uploadFile(e.target.result, file.name);
+    };
+    reader.readAsDataURL(file);
+  }
+
   function buildSelect(elId, base) {
     var step = 500;
     var rounded = Math.round(base / step) * step;
@@ -185,8 +224,7 @@ select, input[type=date] {
       var bPending = b.status === "pending";
       if (aPending && !bPending) return -1;
       if (!aPending && bPending) return 1;
-    
-      // 経過日数を計算
+      
       var now = new Date(); now.setHours(0,0,0,0);
       var aAcq = new Date(a.date); aAcq.setHours(0,0,0,0);
       var bAcq = new Date(b.date); bAcq.setHours(0,0,0,0);
@@ -194,10 +232,10 @@ select, input[type=date] {
       var bDays = Math.round((now - bAcq) / 86400000);
       var aOdd = aDays % 2 !== 0;
       var bOdd = bDays % 2 !== 0;
-    
+      
       if (aOdd && !bOdd) return 1;
       if (!aOdd && bOdd) return -1;
-      return a.price - b.price; // 同グループ内は安い順
+      return a.price - b.price;
     });
     currentList = list;
     var count = list.length;
@@ -205,7 +243,7 @@ select, input[type=date] {
     var confirmed = list.filter(function(y) { return y.status !== "pending" && y.price > 0; });
     if (confirmed.length > 0) {
       var avg = Math.round(confirmed.reduce(function(s,y){ return s + y.price; }, 0) / confirmed.length);
-      currentAvg = avg; // ← 追加
+      currentAvg = avg;
       document.getElementById("s-avg").textContent = fmt(avg);
       if (btcPrice === 0) buildSelect("in-price", avg);
     } else {
@@ -219,16 +257,16 @@ select, input[type=date] {
         var num = i + 1;
         var isSel = y.rowIndex === selectedId;
         var isPending = y.status === "pending";
-      
+        
         var now = new Date(); now.setHours(0,0,0,0);
         var acq = new Date(y.date); acq.setHours(0,0,0,0);
         var days = Math.round((now - acq) / 86400000);
         var isOdd = days % 2 !== 0;
-      
+        
         var priceDisplay = isPending
           ? '<span style="color:#f29900;font-weight:700;">確認中</span>'
           : fmt(y.price);
-      
+        
         html += '<div class="yari-card' + (isSel ? ' selected' : '') + '" style="' + (isOdd ? 'opacity:0.4;' : '') + '" onclick="selectYari(' + y.rowIndex + ',' + y.price + ',\'' + y.date + '\',' + y.sellPrice + ',' + num + ',' + isPending + ')">';
         html += '<div class="yari-top"><span class="badge badge-wait">' + num + '位</span><span class="yari-price">' + priceDisplay + '</span><span class="yari-date">' + y.date + '</span></div>';
         html += '<div class="yari-sub"><span class="sell-label">取得数量：</span><span class="sell-val">' + (y.qty > 0 ? y.qty + " BTC" : "—") + '</span>' + (isSel ? '<span class="selected-mark">✓ 選択中</span>' : '') + '</div>';
@@ -251,9 +289,6 @@ select, input[type=date] {
     document.getElementById("action-title").textContent = "槍" + num + (isPending ? "　確認中" : "　取得：" + fmt(price));
     buildSelect("update-price-select", btcPrice > 0 ? btcPrice : currentAvg);
     buildSelect("sell-select", isPending ? (btcPrice > 0 ? btcPrice : currentAvg) : (price > 0 ? price : currentAvg));
-    // 初期化部分
-
-    // 確認中なら価格更新を優先、そうでなければ売却を優先
     switchTab(isPending ? "update" : "sell");
     renderList(currentList);
     document.getElementById("action-bar").scrollIntoView({ behavior: "smooth" });
