@@ -158,7 +158,15 @@ select, input[type=date] {
       });
   }
   function renderList(list) {
-    list.sort(function(a, b) { return b.price - a.price; });
+    //list.sort(function(a, b) { return b.price - a.price; });
+    // 確認中を上、価格あり는安い順
+    list.sort(function(a, b) {
+      var aPending = a.status === "pending";
+      var bPending = b.status === "pending";
+      if (aPending && !bPending) return -1;
+      if (!aPending && bPending) return 1;
+      return a.price - b.price; // 安い順
+    });
     currentList = list;
     var count = list.length;
     document.getElementById("s-count").textContent = count + "/20";
