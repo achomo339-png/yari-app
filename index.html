@@ -267,19 +267,45 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
       document.getElementById("yari-section").innerHTML = html + '</div>';
   }
 
+// 槍選択時のロジック（ドロップダウン生成機能付き）
   function selectYari(id, price, num) {
     if (selectedId === id) { clearSelection(); return; }
     selectedId = id;
     document.getElementById("action-bar").classList.remove("hidden");
     document.getElementById("action-title").innerHTML = "槍" + num + " " + fmt(price);
 
-    // ★優先タブの判定
-    if (price === "確認中" || price === 0 || !price) {
+    // ドロップダウン（select）要素を取得
+    var updateArea = document.getElementById('area-update');
+    // 既存の入力欄をセレクトボックスに置き換えるための準備
+    var baseHtml = '<select id="new-yari-price" style="width:100%; padding:14px; border-radius:10px; border:1px solid #dadce0; font-size:16px; margin-bottom:10px;">';
+    
+    // --- 基準価格の決定 ---
+    var basePrice = 0;
+    if (price === "確認中" || !price || price === 0) {
+      // 確認中の場合：現在のBTC価格に最も近い500ドル区切り
+      basePrice = Math.round(btcPrice / 500) * 500;
       switchTab('update');
-      document.getElementById('new-yari-price').value = "";
     } else {
+      // 既存価格がある場合：その価格を基準にする
+      basePrice = Number(price);
       switchTab('sell');
     }
+
+    // --- ドロップダウン項目の生成 (上下5000ドル分) ---
+    var options = "";
+    for (var i = 10; i >= -10; i--) {
+      var p = basePrice + (i * 500);
+      var selected = (i === 0) ? "selected" : "";
+      options += '<option value="' + p + '" ' + selected + '>' + fmt(p) + '</option>';
+    }
+    
+    // HTMLを流し込む（inputではなくselectとして再構築）
+    updateArea.innerHTML = baseHtml + options + '</select>' + 
+      '<div class="action-buttons">' +
+        '<button class="btn-cancel" onclick="clearSelection()">取消</button>' +
+        '<button class="btn-confirm btn-blue" onclick="confirmUpdatePrice()">価格を確定</button>' +
+      '</div>';
+
     renderList(currentList);
   }
 
