@@ -64,9 +64,21 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .badge-new { background: #fce8e6; color: #d93025; border: 1px solid #d93025; }
 .yari-price { font-size: 20px; font-weight: 700; flex: 1; }
 .yari-date { font-size: 11px; color: #9aa0a6; }
-.sell-val { font-size: 14px; color: #1e8e3e; font-weight: 700; }
 
-/* プレースホルダー用 */
+/* ★キラキラ・スケルトン用 */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f0f2f5 25%, #e0e2e5 50%, #f0f2f5 75%);
+  background-size: 200px 100%;
+  animation: skeleton-shimmer 1.5s infinite linear;
+  color: transparent !important;
+  border-radius: 4px;
+  display: inline-block;
+  min-width: 60px;
+}
 .placeholder-card { background: #e8eaed; border: 1px dashed #bdc1c6; opacity: 0.6; display: flex; align-items: center; justify-content: center; height: 74px; }
 .small-spinner { width: 16px; height: 16px; border: 2px solid #ccc; border-top: 2px solid #1a73e8; border-radius: 50%; animation: spin 1s linear infinite; }
 
@@ -97,19 +109,18 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   </div>
 </div>
 
-<div class="dashboard-container rel-container" id="dash-container">
-  <div class="loading-overlay" id="dash-loader"><div class="spinner"></div></div>
+<div class="dashboard-container" id="dash-container">
   <div class="dash-header">
     <span class="dash-title">管制塔 ステータス</span>
     <span class="dash-time" id="dash-lastUpdate">---</span>
   </div>
   <div class="dash-grid">
-    <div class="dash-item"><div class="dash-label">総資産</div><div class="dash-value" id="dash-totalUsd">—</div></div>
-    <div class="dash-item"><div class="dash-label">前日比</div><div class="dash-value" id="dash-diffUsd">—</div></div>
-    <div class="dash-item"><div class="dash-label">槍本数</div><div class="dash-value" id="s-count">—</div></div>
-    <div class="dash-item"><div class="dash-label">昨日の利息</div><div class="dash-value plus" id="dash-yesterdayInterest">—</div></div>
-    <div class="dash-item"><div class="dash-label">今月累計</div><div class="dash-value plus" id="dash-monthlyInterest">—</div></div>
-    <div class="dash-item"><div class="dash-label">平均取得</div><div class="dash-value" id="s-avg">—</div></div>
+    <div class="dash-item"><div class="dash-label">総資産</div><div class="dash-value" id="dash-totalUsd"></div></div>
+    <div class="dash-item"><div class="dash-label">前日比</div><div class="dash-value" id="dash-diffUsd"></div></div>
+    <div class="dash-item"><div class="dash-label">槍本数</div><div class="dash-value" id="s-count"></div></div>
+    <div class="dash-item"><div class="dash-label">昨日の利息</div><div class="dash-value plus" id="dash-yesterdayInterest"></div></div>
+    <div class="dash-item"><div class="dash-label">今月累計</div><div class="dash-value plus" id="dash-monthlyInterest"></div></div>
+    <div class="dash-item"><div class="dash-label">平均取得</div><div class="dash-value" id="s-avg"></div></div>
   </div>
 </div>
 
@@ -118,9 +129,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     <span class="ai-briefing-label">⚡ AI短評</span>
     <span class="ai-toggle-icon" id="ai-toggle-icon">▼</span>
   </div>
-  <div class="ai-briefing-content">
-    <div class="ai-briefing-text" id="ai-comment">待機中だぜ...</div>
-  </div>
+  <div class="ai-briefing-content"><div class="ai-briefing-text" id="ai-comment"></div></div>
 </div>
 
 <div id="sold-alert" style="display:none; background:#fff3cd; color:#856404; margin:0 10px 10px; padding:12px; border-radius:10px; font-size:14px; font-weight:700; justify-content:space-between; align-items:center;">
@@ -169,10 +178,21 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     return "$" + Number(n).toLocaleString(); 
   }
   function showToast(msg) { var t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"), 2500); }
-  function setLoader(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
   function toggleAI() { document.getElementById("ai-briefing-box").classList.toggle("collapsed"); }
 
-  // --- ★4枠固定の先行枠表示 ---
+  // --- ダッシュボードのキラキラ化制御 ---
+  function dashSkeleton(show) {
+    const ids = ['dash-totalUsd', 'dash-diffUsd', 's-count', 'dash-yesterdayInterest', 'dash-monthlyInterest', 's-avg'];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (show) {
+        el.innerHTML = '<span class="skeleton">000000</span>';
+      }
+    });
+    if (show) document.getElementById('ai-comment').innerHTML = '<span class="skeleton" style="width:100%; height:20px; display:block; margin-bottom:8px;"></span><span class="skeleton" style="width:80%; height:20px; display:block;"></span>';
+  }
+
+  // --- 4枠固定のプレースホルダー ---
   function renderPlaceholders(count = 4) {
     if (currentList.length > 0) return; 
     var html = '<div class="section"><div class="section-header">槍リスト読込中...</div>';
@@ -189,7 +209,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   }
 
   async function refreshDashboard() {
-    setLoader('dash-loader', true);
+    dashSkeleton(true); // キラキラ開始
     try {
       const data = await callGAS({ action: "dashboard" });
       if (!data) return;
@@ -211,7 +231,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
         alertBox.style.display = 'flex';
       } else { alertBox.style.display = 'none'; }
     } catch (e) { console.error(e); }
-    finally { setLoader('dash-loader', false); } // ★ここで確実にぐるぐるを消す
+    finally { /* 確実に数字が入るのでdashSkeleton(false)的な処理はinnerHTMLの上書きで完了だぜ */ }
   }
 
   async function manualSync() {
@@ -227,12 +247,12 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   }
 
   async function loadList() {
-    setLoader('list-loader', true);
+    document.getElementById('list-loader').style.display = 'flex';
     try {
       const list = await callGAS({ action: "list" });
       renderList(list);
     } catch (e) { console.error(e); }
-    finally { setLoader('list-loader', false); }
+    finally { document.getElementById('list-loader').style.display = 'none'; }
   }
 
   function renderList(list) {
@@ -329,7 +349,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   }
 
   window.onload = () => { 
-    renderPlaceholders(4); // ★最初に4本分の枠を出すぜ
+    renderPlaceholders(4); // 最初に4本分の枠
     fetchBtcPrice(); 
     refreshDashboard(); 
     loadList(); 
