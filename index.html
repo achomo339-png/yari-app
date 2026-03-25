@@ -66,7 +66,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .yari-date { font-size: 11px; color: #9aa0a6; }
 .sell-val { font-size: 14px; color: #1e8e3e; font-weight: 700; }
 
-/* ★ プレースホルダー（影の枠）用スタイル */
+/* プレースホルダー用 */
 .placeholder-card { background: #e8eaed; border: 1px dashed #bdc1c6; opacity: 0.6; display: flex; align-items: center; justify-content: center; height: 74px; }
 .small-spinner { width: 16px; height: 16px; border: 2px solid #ccc; border-top: 2px solid #1a73e8; border-radius: 50%; animation: spin 1s linear infinite; }
 
@@ -77,20 +77,12 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .tab-item { flex: 1; text-align: center; padding: 10px; font-size: 14px; font-weight: 700; color: #5f6368; cursor: pointer; }
 .tab-item.active-blue { color: #1a73e8; border-bottom: 3px solid #1a73e8; }
 .tab-item.active-red { color: #d93025; border-bottom: 3px solid #d93025; }
-.action-area { display: block; }
-.action-area.hidden { display: none; }
-.action-buttons { display: flex; gap: 8px; margin-top: 10px; }
-.btn-cancel { flex: 1; background: #fff; border: 1px solid #dadce0; border-radius: 10px; padding: 12px; font-size: 15px; cursor: pointer; }
-.btn-confirm { flex: 2; background: #d93025; color: #fff; border: none; border-radius: 10px; padding: 12px; font-weight: 700; font-size: 15px; cursor: pointer; }
-.btn-blue { background: #1a73e8; }
 
 .add-section { padding: 0 10px 20px; }
 .add-card { background: #fff; border-radius: 12px; padding: 14px; }
 .btn-add { width: 100%; background: #1a73e8; color: #fff; border: none; border-radius: 10px; padding: 14px; font-weight: 700; font-size: 16px; cursor: pointer; }
 
-/* 共通アニメーション */
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
 .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #202124; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity 0.3s; z-index: 100; pointer-events: none; }
 .toast.show { opacity: 1; }
 </style>
@@ -157,7 +149,6 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 </div>
 
 <div class="add-section">
-  <div class="section-header">手動約定追加</div>
   <div class="add-card">
     <select id="in-price" style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px; border:1px solid #dadce0; font-size:16px;"></select>
     <button class="btn-add" onclick="addYari()">約定追加</button>
@@ -172,7 +163,6 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   var selectedId = null;
   var currentList = [];
   var btcPrice = 0;
-  var lastYariCount = 0;
 
   function fmt(n) { 
     if (n === 0 || n === "0" || !n || n === "確認中") return '<span style="color:#d93025; font-weight:800;">確認中</span>';
@@ -182,9 +172,9 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   function setLoader(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
   function toggleAI() { document.getElementById("ai-briefing-box").classList.toggle("collapsed"); }
 
-  // --- ★先行枠表示ロジック ---
-  function renderPlaceholders(count) {
-    if (count <= 0 || currentList.length > 0) return; // 初回以外は今のリストを維持するので出さないぜ
+  // --- ★4枠固定の先行枠表示 ---
+  function renderPlaceholders(count = 4) {
+    if (currentList.length > 0) return; 
     var html = '<div class="section"><div class="section-header">槍リスト読込中...</div>';
     for (var i = 0; i < count; i++) {
       html += '<div class="yari-card placeholder-card"><div class="small-spinner"></div></div>';
@@ -205,14 +195,12 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
       if (!data) return;
       document.getElementById('dash-lastUpdate').innerText = data.lastUpdate;
       document.getElementById('dash-totalUsd').innerText = "$" + data.totalUsd;
-      var diffVal = parseFloat(data.diffUsd);
-      document.getElementById('dash-diffUsd').innerText = (diffVal >= 0 ? "+$" : "-$") + Math.abs(diffVal).toFixed(2);
-      document.getElementById('dash-diffUsd').className = "dash-value " + (diffVal >= 0 ? "plus" : "minus");
+      var dv = parseFloat(data.diffUsd);
+      document.getElementById('dash-diffUsd').innerText = (dv >= 0 ? "+$" : "-$") + Math.abs(dv).toFixed(2);
+      document.getElementById('dash-diffUsd').className = "dash-value " + (dv >= 0 ? "plus" : "minus");
       document.getElementById('dash-yesterdayInterest').innerText = "+$" + data.yesterdayInterest;
       document.getElementById('dash-monthlyInterest').innerText = "+$" + data.monthlyInterest;
-      
-      lastYariCount = parseInt(data.yariCount);
-      document.getElementById('s-count').innerText = lastYariCount + "本";
+      document.getElementById('s-count').innerText = data.yariCount + "本";
       document.getElementById('s-avg').innerText = "$" + data.avgPrice;
       if (data.aiComment) document.getElementById('ai-comment').innerText = data.aiComment;
 
@@ -222,10 +210,8 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
         document.getElementById('sold-text').innerText = data.soldMessage;
         alertBox.style.display = 'flex';
       } else { alertBox.style.display = 'none'; }
-      
-      return lastYariCount;
     } catch (e) { console.error(e); }
-    setLoader('dash-loader', false);
+    finally { setLoader('dash-loader', false); } // ★ここで確実にぐるぐるを消す
   }
 
   async function manualSync() {
@@ -234,12 +220,10 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     showToast("同期命令を送信したぜ！");
     try {
       await callGAS({ action: "sync" });
-      const count = await refreshDashboard();
-      if (currentList.length === 0) renderPlaceholders(count);
-      await loadList();
+      await Promise.all([refreshDashboard(), loadList()]);
       showToast("同期完了だぜ！");
-    } catch (e) { showToast("エラー発生だ..."); }
-    icon.classList.remove('spinning');
+    } catch (e) { showToast("エラーだぜ"); }
+    finally { icon.classList.remove('spinning'); }
   }
 
   async function loadList() {
@@ -248,7 +232,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
       const list = await callGAS({ action: "list" });
       renderList(list);
     } catch (e) { console.error(e); }
-    setLoader('list-loader', false);
+    finally { setLoader('list-loader', false); }
   }
 
   function renderList(list) {
@@ -276,43 +260,39 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
       document.getElementById("yari-section").innerHTML = html + '</div>';
   }
 
-  // --- アクション関連 ---
   function selectYari(id, price, num) {
     if (selectedId === id) { clearSelection(); return; }
     selectedId = id;
     document.getElementById("action-bar").classList.remove("hidden");
-    var dispPrice = (price === "確認中" ? "価格未確定" : fmt(price));
-    document.getElementById("action-title").innerHTML = "槍" + num + " " + dispPrice;
-
+    document.getElementById("action-title").innerHTML = "槍" + num + " " + (price === "確認中" ? "価格未確定" : fmt(price));
     var area = document.getElementById('area-update');
-    var basePrice = (price === "確認中" || !price || price === 0) ? Math.round(btcPrice / 500) * 500 : Number(price);
-    var options = "";
+    var baseP = (price === "確認中" || !price || price === 0) ? Math.round(btcPrice / 500) * 500 : Number(price);
+    var opts = "";
     for (var i = 10; i >= -10; i--) {
-      var p = basePrice + (i * 500);
-      options += `<option value="${p}" ${i===0?'selected':''}>${fmt(p)}</option>`;
+      var p = baseP + (i * 500);
+      opts += `<option value="${p}" ${i===0?'selected':''}>${fmt(p)}</option>`;
     }
-    area.innerHTML = `<select id="new-yari-price" style="width:100%; padding:14px; border-radius:10px; border:1px solid #dadce0; font-size:16px; margin-bottom:10px;">${options}</select>
+    area.innerHTML = `<select id="new-yari-price" style="width:100%; padding:14px; border-radius:10px; border:1px solid #dadce0; font-size:16px; margin-bottom:10px;">${opts}</select>
       <div class="action-buttons"><button class="btn-cancel" onclick="clearSelection()">取消</button><button class="btn-confirm btn-blue" onclick="confirmUpdatePrice()">価格を確定</button></div>`;
-
     if (price === "確認中" || price === 0 || !price) { switchTab('update'); } else { switchTab('sell'); }
     renderList(currentList);
   }
 
   async function confirmUpdatePrice() {
-    const newPrice = document.getElementById('new-yari-price').value;
-    showToast("価格更新中...");
+    const newP = document.getElementById('new-yari-price').value;
+    showToast("更新中...");
     try {
-      const res = await callGAS({ action: "updatePrice", id: selectedId, price: newPrice });
-      if (res.success) { await refreshDashboard(); await loadList(); clearSelection(); showToast("価格確定！"); }
-    } catch (e) { showToast("通信エラーだぜ"); }
+      const res = await callGAS({ action: "updatePrice", id: selectedId, price: newP });
+      if (res.success) { await Promise.all([refreshDashboard(), loadList()]); clearSelection(); showToast("確定！"); }
+    } catch (e) { showToast("通信エラー"); }
   }
 
   async function confirmSell() {
-    showToast("売却処理中...");
+    showToast("売却中...");
     try {
       await callGAS({ action: "sell", id: selectedId, price: btcPrice });
-      await refreshDashboard(); await loadList(); clearSelection(); showToast("売却完了！");
-    } catch (e) { showToast("売却エラーだぜ"); }
+      await Promise.all([refreshDashboard(), loadList()]); clearSelection(); showToast("完了！");
+    } catch (e) { showToast("エラーだぜ"); }
   }
 
   function clearSelection() { selectedId = null; document.getElementById("action-bar").classList.add("hidden"); renderList(currentList); }
@@ -325,16 +305,16 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   }
 
   async function addYari() {
-    var price = parseFloat(document.getElementById("in-price").value);
-    var ySection = document.getElementById("yari-section");
-    var tempId = "y-" + Date.now();
-    var html = `<div id="${tempId}" class="yari-card" style="opacity:0.6; border:1px dashed #1a73e8;"><div class="yari-top"><span class="badge badge-wait" style="background:#e8f0fe; color:#1a73e8; border:1px dashed #1a73e8;">送信中...</span><span class="yari-price">$${price.toLocaleString()}</span></div></div>`;
-    ySection.insertAdjacentHTML('afterbegin', html);
+    var p = parseFloat(document.getElementById("in-price").value);
+    var yS = document.getElementById("yari-section");
+    var tId = "y-" + Date.now();
+    var h = `<div id="${tId}" class="yari-card" style="opacity:0.6; border:1px dashed #1a73e8;"><div class="yari-top"><span class="badge badge-wait" style="background:#e8f0fe; color:#1a73e8; border:1px dashed #1a73e8;">送信中...</span><span class="yari-price">$${p.toLocaleString()}</span></div></div>`;
+    yS.insertAdjacentHTML('afterbegin', h);
     try {
-      await callGAS({ action: "add", price: price, date: new Date().toISOString() });
+      await callGAS({ action: "add", price: p, date: new Date().toISOString() });
       await Promise.all([refreshDashboard(), loadList()]);
-      showToast("新しい槍を配備したぜ！");
-    } catch (e) { document.getElementById(tempId).remove(); showToast("エラーだぜ"); }
+      showToast("配備完了！");
+    } catch (e) { document.getElementById(tId).remove(); showToast("エラーだぜ"); }
   }
 
   function fetchBtcPrice() {
@@ -348,10 +328,10 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     });
   }
 
-  window.onload = async () => { 
+  window.onload = () => { 
+    renderPlaceholders(4); // ★最初に4本分の枠を出すぜ
     fetchBtcPrice(); 
-    const count = await refreshDashboard();
-    renderPlaceholders(count); // 初回、ダッシュボードの本数で枠を出すぜ
+    refreshDashboard(); 
     loadList(); 
   };
 </script>
