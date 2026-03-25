@@ -157,6 +157,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     <div id="tab-sell" class="tab-item" onclick="switchTab('sell')">売却</div>
   </div>
   <div id="action-title" style="font-size:12px; margin-bottom:10px; color:#5f6368; font-weight:700;"></div>
+  
   <div id="area-update" class="action-area"></div> 
   <div id="area-sell" class="action-area hidden"></div>
 </div>
@@ -286,14 +287,16 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     const dispPrice = (price === "確認中" ? "価格未確定" : fmt(price));
     document.getElementById("action-title").innerHTML = "槍" + num + " " + dispPrice;
 
-    // --- 価格更新タブ生成 ---
-    var updateArea = document.getElementById('area-update');
+    // ドロップダウン用共通オプション生成（今のBTC価格から前後500刻み）
     var baseP = (price === "確認中" || !price || price === 0) ? Math.round(btcPrice / 500) * 500 : Number(price);
     var opts = "";
     for (var i = 10; i >= -10; i--) {
       var p = baseP + (i * 500);
       opts += `<option value="${p}" ${i===0?'selected':''}>${fmt(p)}</option>`;
     }
+
+    // --- 価格更新エリア ---
+    var updateArea = document.getElementById('area-update');
     updateArea.innerHTML = `
       <select id="new-yari-price">${opts}</select>
       <div class="action-buttons">
@@ -301,10 +304,11 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
         <button class="btn-confirm btn-blue" onclick="confirmUpdatePrice()">価格を確定</button>
       </div>`;
 
-    // --- 売却タブ生成 ---
+    // --- 売却エリア（司令官の要望：入力価格での売却） ---
     var sellArea = document.getElementById('area-sell');
     sellArea.innerHTML = `
-      <div style="font-size:13px; color:#5f6368; margin-bottom:10px;">現在のBTC価格 (${fmt(btcPrice)}) で売却済みにするぜ。</div>
+      <div style="font-size:12px; color:#5f6368; margin-bottom:5px;">売却価格（ターゲット価格）を選択してくれぜ：</div>
+      <select id="sell-yari-price">${opts}</select>
       <div class="action-buttons">
         <button class="btn-cancel" onclick="clearSelection()">取消</button>
         <button class="btn-confirm" onclick="confirmSell()">売却済みにする</button>
@@ -319,15 +323,17 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     showToast("更新中...");
     try {
       const res = await callGAS({ action: "updatePrice", id: selectedId, price: newP });
-      if (res.success) { await Promise.all([refreshDashboard(), loadList()]); clearSelection(); showToast("確定！"); }
+      if (res.success) { await Promise.all([refreshDashboard(), loadList()]); clearSelection(); showToast("確定だぜ！"); }
     } catch (e) { showToast("通信エラー"); }
   }
 
   async function confirmSell() {
-    showToast("売却中...");
+    // ★現在の価格じゃなく、ドロップダウンで選んだ価格を取得するぜ！
+    const sellP = document.getElementById('sell-yari-price').value;
+    showToast("売却処理中...");
     try {
-      await callGAS({ action: "sell", id: selectedId, price: btcPrice });
-      await Promise.all([refreshDashboard(), loadList()]); clearSelection(); showToast("完了！");
+      await callGAS({ action: "sell", id: selectedId, price: sellP });
+      await Promise.all([refreshDashboard(), loadList()]); clearSelection(); showToast("利確完了だぜ！");
     } catch (e) { showToast("エラーだぜ"); }
   }
 
