@@ -124,7 +124,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   <div class="ai-briefing-header" onclick="toggleAI()">
     <span class="ai-briefing-label">
       ⚡ AI短評 
-      <span id="ai-time" style="font-size: 10px; font-weight: 400; opacity: 0.8; margin-left: 5px;"></span>
+      <span id="ai-time" style="font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle;"></span>
       <span id="ai-dot" class="ai-dot" style="display:none;"></span>
     </span>
     <span class="ai-toggle-icon" id="ai-toggle-icon">▼</span>
@@ -217,8 +217,13 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   function renderDashboard(data) {
     if (!data) return;
     document.getElementById('dash-lastUpdate').innerText = data.lastUpdate;
+    // ★ AI短評の横に日付と時間を表示（例: 2026/03/26 17:30 -> 3/26 17:30 更新）
     if (data.lastUpdate && data.lastUpdate.includes(" ")) {
-      document.getElementById('ai-time').innerText = "(" + data.lastUpdate.split(" ")[1] + " 更新)";
+      const parts = data.lastUpdate.split(" ");
+      const dateParts = parts[0].split("/"); // [2026, 03, 26]
+      const monthDay = parseInt(dateParts[1]) + "/" + parseInt(dateParts[2]);
+      const timeOnly = parts[1]; // 17:30
+      document.getElementById('ai-time').innerText = monthDay + " " + timeOnly + " 更新";
     }
     document.getElementById('dash-totalUsd').innerText = "$" + data.totalUsd;
     var dv = parseFloat(data.diffUsd);
