@@ -23,11 +23,6 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .sync-btn { cursor: pointer; font-size: 18px; opacity: 0.8; transition: opacity 0.2s; padding: 4px; }
 .sync-btn.spinning { animation: spin 1s linear infinite; pointer-events: none; }
 
-/* コンテナ共通（ローディング用） */
-.rel-container { position: relative; }
-.loading-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.4); z-index: 5; border-radius: 12px; align-items: center; justify-content: center; backdrop-filter: blur(1px); }
-.spinner { width: 24px; height: 24px; border: 3px solid #f3f3f3; border-top: 3px solid #1a73e8; border-radius: 50%; animation: spin 1s linear infinite; }
-
 /* ダッシュボード */
 .dashboard-container { background: #fff; border-radius: 12px; margin: 10px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
@@ -83,13 +78,15 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .placeholder-card { background: #e8eaed; border: 1px dashed #bdc1c6; opacity: 0.6; display: flex; align-items: center; justify-content: center; height: 74px; }
 .small-spinner { width: 16px; height: 16px; border: 2px solid #ccc; border-top: 2px solid #1a73e8; border-radius: 50%; animation: spin 1s linear infinite; }
 
-/* アクションバー & ボタン修正 */
+/* アクションバー & ボタン */
 .action-bar { background: #e8f0fe; border-radius: 12px; padding: 14px; margin: 0 10px 8px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
 .action-bar.hidden { display: none; }
 .tab-container { display: flex; gap: 5px; margin-bottom: 12px; border-bottom: 1px solid #d1d9e6; }
 .tab-item { flex: 1; text-align: center; padding: 10px; font-size: 14px; font-weight: 700; color: #5f6368; cursor: pointer; }
 .tab-item.active-blue { color: #1a73e8; border-bottom: 3px solid #1a73e8; }
 .tab-item.active-red { color: #d93025; border-bottom: 3px solid #d93025; }
+
+.action-area.hidden { display: none; } /* これで確実に隠すぜ */
 
 .action-buttons { display: flex; gap: 10px; margin-top: 12px; width: 100%; }
 .btn-cancel, .btn-confirm { flex: 1; padding: 12px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; border: none; transition: opacity 0.2s; }
@@ -284,18 +281,18 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     if (selectedId === id) { clearSelection(); return; }
     selectedId = id;
     document.getElementById("action-bar").classList.remove("hidden");
-    const dispPrice = (price === "確認中" ? "価格未確定" : fmt(price));
+    const isKakunin = (price === "確認中" || price === 0 || !price);
+    const dispPrice = isKakunin ? "価格未確定" : fmt(price);
     document.getElementById("action-title").innerHTML = "槍" + num + " " + dispPrice;
 
-    // ドロップダウン用共通オプション生成（今のBTC価格から前後500刻み）
-    var baseP = (price === "確認中" || !price || price === 0) ? Math.round(btcPrice / 500) * 500 : Number(price);
+    var baseP = isKakunin ? Math.round(btcPrice / 500) * 500 : Number(price);
     var opts = "";
     for (var i = 10; i >= -10; i--) {
       var p = baseP + (i * 500);
       opts += `<option value="${p}" ${i===0?'selected':''}>${fmt(p)}</option>`;
     }
 
-    // --- 価格更新エリア ---
+    // --- 価格更新エリアを常に生成 ---
     var updateArea = document.getElementById('area-update');
     updateArea.innerHTML = `
       <select id="new-yari-price">${opts}</select>
@@ -304,17 +301,22 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
         <button class="btn-confirm btn-blue" onclick="confirmUpdatePrice()">価格を確定</button>
       </div>`;
 
-    // --- 売却エリア（司令官の要望：入力価格での売却） ---
+    // --- 売却エリアを常に生成 ---
     var sellArea = document.getElementById('area-sell');
     sellArea.innerHTML = `
-      <div style="font-size:12px; color:#5f6368; margin-bottom:5px;">売却価格（ターゲット価格）を選択してくれぜ：</div>
+      <div style="font-size:12px; color:#5f6368; margin-bottom:5px;">売却ターゲット価格を選択：</div>
       <select id="sell-yari-price">${opts}</select>
       <div class="action-buttons">
         <button class="btn-cancel" onclick="clearSelection()">取消</button>
         <button class="btn-confirm" onclick="confirmSell()">売却済みにする</button>
       </div>`;
 
-    if (price === "確認中" || price === 0 || !price) { switchTab('update'); } else { switchTab('sell'); }
+    // ★司令官の指示：価格が「確認中」なら「価格更新」タブ、それ以外は「売却」タブを表示
+    if (isKakunin) { 
+      switchTab('update'); 
+    } else { 
+      switchTab('sell'); 
+    }
     renderList(currentList);
   }
 
@@ -328,7 +330,6 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   }
 
   async function confirmSell() {
-    // ★現在の価格じゃなく、ドロップダウンで選んだ価格を取得するぜ！
     const sellP = document.getElementById('sell-yari-price').value;
     showToast("売却処理中...");
     try {
@@ -338,6 +339,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   }
 
   function clearSelection() { selectedId = null; document.getElementById("action-bar").classList.add("hidden"); renderList(currentList); }
+
   function switchTab(t) {
     const isU = (t === 'update');
     document.getElementById('area-update').classList.toggle('hidden', !isU);
