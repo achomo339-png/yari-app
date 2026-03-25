@@ -62,11 +62,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .yari-date { font-size: 11px; color: #9aa0a6; }
 .sell-val { font-size: 14px; color: #1e8e3e; font-weight: 700; }
 
-/* ローディング（ぼかし廃止） */
-.loading-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.7); z-index: 5; border-radius: 12px; align-items: center; justify-content: center; }
-.spinner { width: 24px; height: 24px; border: 3px solid #f3f3f3; border-top: 3px solid #1a73e8; border-radius: 50%; animation: spin 1s linear infinite; }
-
-/* キラキラ・シマー */
+/* キラキラ・プレースホルダー */
 @keyframes skeleton-shimmer {
   0% { background-position: -200px 0; }
   100% { background-position: calc(200px + 100%) 0; }
@@ -81,6 +77,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   min-width: 60px;
 }
 .placeholder-card { background: #e8eaed; border: 1px dashed #bdc1c6; opacity: 0.6; display: flex; align-items: center; justify-content: center; height: 74px; }
+.small-spinner { width: 16px; height: 16px; border: 2px solid #ccc; border-top: 2px solid #1a73e8; border-radius: 50%; animation: spin 1s linear infinite; }
 
 /* アクションバー & ボタン */
 .action-bar { background: #e8f0fe; border-radius: 12px; padding: 14px; margin: 0 10px 8px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
@@ -90,7 +87,6 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .tab-item.active-blue { color: #1a73e8; border-bottom: 3px solid #1a73e8; }
 .tab-item.active-red { color: #d93025; border-bottom: 3px solid #d93025; }
 
-/* ★ここがポイント：hiddenクラスで二重表示を殺すぜ */
 .action-area.hidden { display: none !important; }
 
 .action-buttons { display: flex; gap: 10px; margin-top: 12px; width: 100%; }
@@ -103,7 +99,10 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 
 .add-section { padding: 0 10px 20px; }
 .add-card { background: #fff; border-radius: 12px; padding: 14px; }
-.btn-add { width: 100%; background: #1a73e8; color: #fff; border: none; border-radius: 10px; padding: 14px; font-weight: 700; font-size: 16px; cursor: pointer; }
+
+/* ★約定追加ボタンのスタイル */
+.btn-add { width: 100%; background: #1a73e8; color: #fff; border: none; border-radius: 10px; padding: 14px; font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-add:disabled { background: #bdc1c6; cursor: not-allowed; }
 
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #202124; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity 0.3s; z-index: 100; pointer-events: none; }
@@ -149,7 +148,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 </div>
 
 <div class="rel-container">
-  <div class="loading-overlay" id="list-loader"><div class="spinner"></div></div>
+  <div class="loading-overlay" id="list-loader" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.7); z-index:5; border-radius:12px; align-items:center; justify-content:center;"><div class="spinner"></div></div>
   <div id="yari-section"></div>
 </div>
 
@@ -167,7 +166,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 <div class="add-section">
   <div class="add-card">
     <select id="in-price" style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px; border:1px solid #dadce0; font-size:16px;"></select>
-    <button class="btn-add" onclick="addYari()">約定追加</button>
+    <button class="btn-add" id="btn-add-yari" onclick="addYari()">約定追加</button>
   </div>
 </div>
 
@@ -297,7 +296,6 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
       opts += `<option value="${p}" ${i===0?'selected':''}>${fmt(p)}</option>`;
     }
 
-    // エリア生成
     document.getElementById('area-update').innerHTML = `
       <select id="new-yari-price">${opts}</select>
       <div class="action-buttons">
@@ -313,12 +311,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
         <button class="btn-confirm" onclick="confirmSell()">売却済みにする</button>
       </div>`;
 
-    // ★自動スイッチ！
-    if (isKakunin) { 
-      switchTab('update'); 
-    } else { 
-      switchTab('sell'); 
-    }
+    if (isKakunin) { switchTab('update'); } else { switchTab('sell'); }
     renderList(currentList);
   }
 
@@ -341,27 +334,41 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   }
 
   function clearSelection() { selectedId = null; document.getElementById("action-bar").classList.add("hidden"); renderList(currentList); }
-  
   function switchTab(t) {
     const isU = (t === 'update');
-    // クラスをスイッチして物理的に消す
     document.getElementById('area-update').classList.toggle('hidden', !isU);
     document.getElementById('area-sell').classList.toggle('hidden', isU);
     document.getElementById('tab-update').className = 'tab-item' + (isU ? ' active-blue' : '');
     document.getElementById('tab-sell').className = 'tab-item' + (!isU ? ' active-red' : '');
   }
 
+  // ★約定追加ボタンの進化
   async function addYari() {
-    var p = parseFloat(document.getElementById("in-price").value);
-    var yS = document.getElementById("yari-section");
-    var tId = "y-" + Date.now();
+    const p = parseFloat(document.getElementById("in-price").value);
+    const btn = document.getElementById("btn-add-yari");
+    const yS = document.getElementById("yari-section");
+    const tId = "y-" + Date.now();
+    
+    // 【楽観的UI】カード差し込み
     var h = `<div id="${tId}" class="yari-card" style="opacity:0.6; border:1px dashed #1a73e8;"><div class="yari-top"><span class="badge badge-wait" style="background:#e8f0fe; color:#1a73e8; border:1px dashed #1a73e8;">送信中...</span><span class="yari-price">$${p.toLocaleString()}</span></div></div>`;
     yS.insertAdjacentHTML('afterbegin', h);
+
+    // 【司令官の要望】ボタンをグレーにして文字を変えるぜ
+    btn.disabled = true;
+    btn.innerHTML = '<span class="small-spinner" style="margin-right:8px; border-color:#fff; border-top-color:transparent;"></span>ただいま追加中...';
+
     try {
       await callGAS({ action: "add", price: p, date: new Date().toISOString() });
       await Promise.all([refreshDashboard(), loadList()]);
       showToast("配備完了！");
-    } catch (e) { document.getElementById(tId).remove(); showToast("エラーだぜ"); }
+    } catch (e) { 
+      document.getElementById(tId).remove(); 
+      showToast("エラーだぜ"); 
+    } finally {
+      // 元に戻すぜ
+      btn.disabled = false;
+      btn.innerText = "約定追加";
+    }
   }
 
   function fetchBtcPrice() {
