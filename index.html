@@ -31,13 +31,9 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .dash-time { font-size: 10px; color: #9aa0a6; }
 
 .dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: none; }
-.dash-item { 
-  text-align: center; 
-  padding: 10px 0; /* 上下パディングを増やしてデカ文字を強調 */
-  border-right: 1px solid #f1f3f4; /* 縦線 */
-}
-.dash-item:nth-child(3n) { border-right: none; } /* 各行の右端だけ線を消す */
-.dash-item:nth-child(-n+3) { border-bottom: 1px solid #f1f3f4; } /* 上段3つに下線を引く */
+.dash-item { text-align: center; padding: 10px 0; border-right: 1px solid #f1f3f4; }
+.dash-item:nth-child(3n) { border-right: none; }
+.dash-item:nth-child(-n+3) { border-bottom: 1px solid #f1f3f4; }
 
 .dash-label { font-size: 10px; color: #5f6368; margin-bottom: 4px; font-weight: 600; }
 .dash-value { font-size: 14px; font-weight: 800; color: #202124; min-height: 20px; white-space: nowrap; overflow: hidden; text-overflow: clip; padding: 0 1px; letter-spacing: -0.02em; }
@@ -90,7 +86,10 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .btn-cancel { background: #fff; color: #5f6368; border: 1px solid #dadce0; }
 .btn-confirm { background: #d93025; color: #fff; }
 .btn-blue { background: #1a73e8 !important; }
-.action-bar select { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #dadce0; font-size: 16px; margin-bottom: 5px; background: #fff; }
+
+/* 入力エリア */
+.action-bar select, .action-bar input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #dadce0; font-size: 16px; margin-bottom: 8px; background: #fff; box-sizing: border-box; }
+.input-label { font-size: 11px; color: #5f6368; margin-bottom: 4px; font-weight: 700; }
 
 .add-section { padding: 0 10px 20px; }
 .add-card { background: #fff; border-radius: 12px; padding: 14px; }
@@ -156,12 +155,30 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 
 <div class="action-bar hidden" id="action-bar">
   <div class="tab-container">
-    <div id="tab-update" class="tab-item" onclick="switchTab('update')">価格更新</div>
+    <div id="tab-update" class="tab-item" onclick="switchTab('update')">情報更新</div>
     <div id="tab-sell" class="tab-item" onclick="switchTab('sell')">売却</div>
   </div>
   <div id="action-title" style="font-size:12px; margin-bottom:10px; color:#5f6368; font-weight:700;"></div>
-  <div id="area-update" class="action-area hidden"></div> 
-  <div id="area-sell" class="action-area hidden"></div>
+  
+  <div id="area-update" class="action-area hidden">
+      <div class="input-label">約定価格 ($)</div>
+      <select id="new-yari-price"></select>
+      <div class="input-label">数量 (BTC)</div>
+      <input type="number" id="new-yari-qty" step="0.0001" inputmode="decimal">
+      <div class="action-buttons">
+        <button class="btn-cancel" onclick="clearSelection()">取消</button>
+        <button class="btn-confirm btn-blue" onclick="confirmUpdateInfo()">情報を確定</button>
+      </div>
+  </div> 
+  
+  <div id="area-sell" class="action-area hidden">
+      <div class="input-label">売却価格 ($)</div>
+      <select id="sell-yari-price"></select>
+      <div class="action-buttons">
+        <button class="btn-cancel" onclick="clearSelection()">取消</button>
+        <button class="btn-confirm" onclick="confirmSell()">売却済みにする</button>
+      </div>
+  </div>
 </div>
 
 <div class="add-section">
@@ -273,33 +290,42 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
         if (acq >= baseAcq) baseAcq.setDate(baseAcq.getDate() + 1);
         cycleClass = (Math.floor((baseToday - baseAcq) / 86400000) % 2 === 0) ? "active-cycle" : "wait-cycle";
       }
-      html += `<div class="yari-card ${cycleClass} ${y.id === selectedId ? 'selected' : ''}" onclick="selectYari(${y.id},'${y.price}',${i+1})">`;
+      html += `<div class="yari-card ${cycleClass} ${y.id === selectedId ? 'selected' : ''}" onclick="selectYari(${y.id},'${y.price}',${i+1},${y.qty})">`;
       html += `<div class="yari-top"><span class="badge badge-wait">${i+1}位</span><span class="yari-price">${fmt(y.price)}</span><span class="yari-date">${y.date}</span></div>`;
       html += `<div class="yari-sub"><span class="sell-val">数量：${y.qty} BTC</span></div></div>`;
     });
     document.getElementById("yari-section").innerHTML = html;
   }
 
-  function selectYari(id, price, num) {
+  function selectYari(id, price, num, qty) {
     if (selectedId === id) { clearSelection(); return; }
     selectedId = id;
     document.getElementById("action-bar").classList.remove("hidden");
     const isK = (price === "確認中" || price === 0 || !price);
     document.getElementById("action-title").innerHTML = "槍" + num + " " + (isK ? "価格未確定" : fmt(price));
+
+    // 数量のデフォルトセット
+    document.getElementById("new-yari-qty").value = qty;
+
     var baseP = isK ? Math.round(btcPrice / 500) * 500 : Number(price);
     var opts = ""; for (var i = 10; i >= -10; i--) { var p = baseP + (i * 500); opts += `<option value="${p}" ${i===0?'selected':''}>${fmt(p)}</option>`; }
-    document.getElementById('area-update').innerHTML = `<select id="new-yari-price">${opts}</select><div class="action-buttons"><button class="btn-cancel" onclick="clearSelection()">取消</button><button class="btn-confirm btn-blue" onclick="confirmUpdatePrice()">価格を確定</button></div>`;
-    document.getElementById('area-sell').innerHTML = `<select id="sell-yari-price">${opts}</select><div class="action-buttons"><button class="btn-cancel" onclick="clearSelection()">取消</button><button class="btn-confirm" onclick="confirmSell()">売却済みにする</button></div>`;
+    
+    document.getElementById('new-yari-price').innerHTML = opts;
+    document.getElementById('sell-yari-price').innerHTML = opts;
+
     if (isK) switchTab('update'); else switchTab('sell');
     renderList(currentList);
   }
 
-  async function confirmUpdatePrice() {
+  // ★ 数量と価格の両方を更新するように変更
+  async function confirmUpdateInfo() {
     const newP = document.getElementById('new-yari-price').value;
+    const newQ = document.getElementById('new-yari-qty').value;
     showToast("更新中...");
     try {
-      const res = await callGAS({ action: "updatePrice", id: selectedId, price: newP });
-      if (res.success) { await loadAllData(); clearSelection(); showToast("確定だぜ！"); }
+      // action: updatePrice から updateInfo に変更（GAS側の修正が必要だぜ）
+      const res = await callGAS({ action: "updateInfo", id: selectedId, price: newP, qty: newQ });
+      if (res.success) { await loadAllData(); clearSelection(); showToast("更新完了！"); }
     } catch (e) { showToast("通信エラー"); }
   }
 
