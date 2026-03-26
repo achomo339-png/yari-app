@@ -22,22 +22,21 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .header-price { font-size: 16px; font-weight: 600; opacity: 0.95; }
 .sync-btn { cursor: pointer; font-size: 18px; opacity: 0.8; transition: opacity 0.2s; padding: 4px; position: relative; }
 .sync-btn.spinning { animation: spin 1s linear infinite; pointer-events: none; }
-
-/* 17:30 通知バッジ */
 .notification-dot { display: none; position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #ff5252; border-radius: 50%; border: 2px solid #1a73e8; box-shadow: 0 0 5px rgba(255,82,82,0.8); }
 
-/* ダッシュボード */
+/* ダッシュボード (3列グリッド) */
 .dashboard-container { background: #fff; border-radius: 12px; margin: 10px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+.dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
 .dash-title { font-size: 12px; font-weight: 700; color: #1a73e8; }
 .dash-time { font-size: 10px; color: #9aa0a6; }
-.dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.dash-item { text-align: center; border-right: 1px solid #f1f3f4; }
-.dash-item:last-child, .dash-item:nth-child(3n) { border-right: none; }
-.dash-label { font-size: 10px; color: #5f6368; }
-.dash-value { font-size: 14px; font-weight: 700; color: #202124; min-height: 20px; }
+.dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.dash-item { text-align: center; padding: 6px 0; border-right: 1px solid #f1f3f4; }
+.dash-item:nth-child(3n) { border-right: none; }
+.dash-label { font-size: 9px; color: #5f6368; margin-bottom: 2px; font-weight: 600; }
+.dash-value { font-size: 13px; font-weight: 700; color: #202124; min-height: 18px; white-space: nowrap; }
 .dash-value.plus { color: #1e8e3e; }
 .dash-value.minus { color: #d93025; }
+.dash-divider { grid-column: span 3; height: 1px; background: #f1f3f4; margin: 4px 0; }
 
 /* AI短評 */
 .ai-briefing { background: #1a73e8; color: #fff; margin: 0 10px 10px; border-radius: 10px; box-shadow: 0 4px 12px rgba(26,115,232,0.2); overflow: hidden; }
@@ -50,9 +49,12 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .ai-briefing.collapsed .ai-briefing-content { max-height: 0; padding: 0 15px; opacity: 0; pointer-events: none; overflow: hidden; }
 .ai-briefing-text { font-size: 15px; line-height: 1.6; font-weight: 700; white-space: pre-wrap; word-wrap: break-word; letter-spacing: 0.02em; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; }
 
-/* 槍リスト */
+/* 槍リストヘッダー */
 .section { padding: 0 10px 6px; width: 100%; min-height: 100px; }
-.section-header { font-size: 13px; font-weight: 700; color: #5f6368; margin-bottom: 5px; margin-top: 8px; }
+.section-header-container { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; margin-top: 12px; border-left: 4px solid #1a73e8; padding-left: 8px; }
+.section-header { font-size: 14px; font-weight: 700; color: #202124; }
+.section-sub-header { font-size: 11px; color: #5f6368; font-weight: 600; }
+
 .yari-card { background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 6px; cursor: pointer; border: 2px solid transparent; width: 100%; position: relative; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .yari-card.active-cycle { border-color: #1a73e8; }
 .yari-card.wait-cycle { opacity: 0.5; filter: grayscale(0.5); border-color: #dadce0; }
@@ -66,7 +68,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 
 /* スケルトン */
 @keyframes skeleton-shimmer { 0% { background-position: -200px 0; } 100% { background-position: calc(200px + 100%) 0; } }
-.skeleton { background: linear-gradient(90deg, #f0f2f5 25%, #e0e2e5 50%, #f0f2f5 75%); background-size: 200px 100%; animation: skeleton-shimmer 1.5s infinite linear; color: transparent !important; border-radius: 4px; display: inline-block; min-width: 60px; }
+.skeleton { background: linear-gradient(90deg, #f0f2f5 25%, #e0e2e5 50%, #f0f2f5 75%); background-size: 200px 100%; animation: skeleton-shimmer 1.5s infinite linear; color: transparent !important; border-radius: 4px; display: inline-block; min-width: 40px; }
 .placeholder-card { background: #e8eaed; border: 1px dashed #bdc1c6; opacity: 0.6; display: flex; align-items: center; justify-content: center; height: 74px; margin-bottom: 6px; border-radius: 10px; }
 
 /* アクションバー */
@@ -112,11 +114,14 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   </div>
   <div class="dash-grid">
     <div class="dash-item"><div class="dash-label">総資産</div><div class="dash-value" id="dash-totalUsd"></div></div>
-    <div class="dash-item"><div class="dash-label">資産前日比</div><div class="dash-value" id="dash-diffUsd"></div></div>
-    <div class="dash-item"><div class="dash-label">槍本数</div><div class="dash-value" id="s-count"></div></div>
-    <div class="dash-item"><div class="dash-label">昨日の利息</div><div class="dash-value plus" id="dash-yesterdayInterest"></div></div>
-    <div class="dash-item"><div class="dash-label">今月累計利息</div><div class="dash-value plus" id="dash-monthlyInterest"></div></div>
-    <div class="dash-item"><div class="dash-label">槍平均取得</div><div class="dash-value" id="s-avg"></div></div>
+    <div class="dash-item"><div class="dash-label">資産前日比</div><div class="dash-value" id="dash-diffYesterday"></div></div>
+    <div class="dash-item"><div class="dash-label">資産年初比</div><div class="dash-value" id="dash-diffYearly"></div></div>
+    
+    <div class="dash-divider"></div>
+    
+    <div class="dash-item"><div class="dash-label">昨日の利息</div><div class="dash-value plus" id="dash-interestYesterday"></div></div>
+    <div class="dash-item"><div class="dash-label">今月の利息</div><div class="dash-value plus" id="dash-interestMonthly"></div></div>
+    <div class="dash-item"><div class="dash-label">今年の利息</div><div class="dash-value plus" id="dash-interestYearly"></div></div>
   </div>
 </div>
 
@@ -137,7 +142,13 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   <span onclick="closeSoldAlert()" style="cursor:pointer; font-size:18px; padding-left:10px;">×</span>
 </div>
 
-<div id="yari-section"></div>
+<div class="section">
+  <div class="section-header-container">
+    <span class="section-header">保有槍部隊</span>
+    <span class="section-sub-header" id="yari-stats-header">読込中...</span>
+  </div>
+  <div id="yari-section"></div>
+</div>
 
 <div class="action-bar hidden" id="action-bar">
   <div class="tab-container">
@@ -160,7 +171,6 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 
 <script>
   var GAS_URL = "https://script.google.com/macros/s/AKfycbyPiAYrI1IDI5DPRtUFd--wOZBLY4FTwiovI4iSys_cmQm2LhqUvE5s1Rz5PJqfT5RRjQ/exec";
-  
   var selectedId = null;
   var currentList = [];
   var btcPrice = 0;
@@ -173,14 +183,15 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   function toggleAI() { document.getElementById("ai-briefing-box").classList.toggle("collapsed"); }
 
   function setSkeleton(show) {
-    const fields = ['dash-totalUsd', 'dash-diffUsd', 's-count', 'dash-yesterdayInterest', 'dash-monthlyInterest', 's-avg'];
+    const fields = ['dash-totalUsd', 'dash-diffYesterday', 'dash-diffYearly', 'dash-interestYesterday', 'dash-interestMonthly', 'dash-interestYearly'];
     fields.forEach(f => {
       const el = document.getElementById(f);
-      if (show) el.innerHTML = '<span class="skeleton">------</span>';
+      if (show) el.innerHTML = '<span class="skeleton">---</span>';
     });
     if (show) {
       document.getElementById('ai-comment').innerHTML = '<span class="skeleton" style="width:100%; height:20px; display:block; margin-bottom:8px;"></span>';
-      document.getElementById("yari-section").innerHTML = '<div class="section"><div class="placeholder-card"><span class="small-spinner"></span></div></div>';
+      document.getElementById("yari-section").innerHTML = '<div class="placeholder-card"><span class="small-spinner"></span></div>';
+      document.getElementById("yari-stats-header").innerHTML = '<span class="skeleton">本数: -- / 平均: --</span>';
     }
   }
 
@@ -209,7 +220,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     try {
       const data = await callGAS({ action: "all" });
       renderDashboard(data.dashboard);
-      renderList(data.list);
+      renderList(data.list, data.dashboard);
       update1730Badge();
     } catch (e) { console.error(e); showToast("通信エラー"); }
   }
@@ -217,22 +228,31 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
   function renderDashboard(data) {
     if (!data) return;
     document.getElementById('dash-lastUpdate').innerText = data.lastUpdate;
-    // ★ AI短評の横に日付と時間を表示（例: 2026/03/26 17:30 -> 3/26 17:30 更新）
     if (data.lastUpdate && data.lastUpdate.includes(" ")) {
       const parts = data.lastUpdate.split(" ");
-      const dateParts = parts[0].split("/"); // [2026, 03, 26]
+      const dateParts = parts[0].split("/");
       const monthDay = parseInt(dateParts[1]) + "/" + parseInt(dateParts[2]);
-      const timeOnly = parts[1]; // 17:30
-      document.getElementById('ai-time').innerText = monthDay + " " + timeOnly + " 更新";
+      document.getElementById('ai-time').innerText = monthDay + " " + parts[1] + " 更新";
     }
+    
+    // 資産
     document.getElementById('dash-totalUsd').innerText = "$" + data.totalUsd;
-    var dv = parseFloat(data.diffUsd);
-    document.getElementById('dash-diffUsd').innerText = (dv >= 0 ? "+$" : "-$") + Math.abs(dv).toFixed(2);
-    document.getElementById('dash-diffUsd').className = "dash-value " + (dv >= 0 ? "plus" : "minus");
-    document.getElementById('dash-yesterdayInterest').innerText = "+$" + data.yesterdayInterest;
-    document.getElementById('dash-monthlyInterest').innerText = "+$" + data.monthlyInterest;
-    document.getElementById('s-count').innerText = data.yariCount + "本";
-    document.getElementById('s-avg').innerText = "$" + data.avgPrice;
+    
+    // 前日比
+    const dy = parseFloat(data.diffYesterday);
+    document.getElementById('dash-diffYesterday').innerText = (dy >= 0 ? "+$" : "-$") + Math.abs(dy).toLocaleString();
+    document.getElementById('dash-diffYesterday').className = "dash-value " + (dy >= 0 ? "plus" : "minus");
+    
+    // 年初比
+    const dyear = parseFloat(data.diffYearly);
+    document.getElementById('dash-diffYearly').innerText = (dyear >= 0 ? "+$" : "-$") + Math.abs(dyear).toLocaleString();
+    document.getElementById('dash-diffYearly').className = "dash-value " + (dyear >= 0 ? "plus" : "minus");
+
+    // 利息
+    document.getElementById('dash-interestYesterday').innerText = "+$" + data.interestYesterday;
+    document.getElementById('dash-interestMonthly').innerText = "+$" + data.interestMonthly;
+    document.getElementById('dash-interestYearly').innerText = "+$" + data.interestYearly;
+    
     if (data.aiComment) document.getElementById('ai-comment').innerText = data.aiComment;
 
     const alertBox = document.getElementById('sold-alert');
@@ -242,31 +262,17 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     } else { alertBox.style.display = 'none'; }
   }
 
-  function closeSoldAlert() {
-    const time = document.getElementById('dash-lastUpdate').innerText;
-    localStorage.setItem('alert_closed_' + time, 'true');
-    document.getElementById('sold-alert').style.display = 'none';
-  }
-
-  async function manualSync() {
-    const icon = document.getElementById('sync-icon');
-    icon.classList.add('spinning');
-    showToast("同期中だぜ！");
-    try {
-      await callGAS({ action: "sync" });
-      localStorage.setItem('last_sync_date', new Date().toLocaleDateString());
-      await loadAllData();
-      showToast("同期完了！");
-    } catch (e) { showToast("エラーだぜ"); }
-    finally { icon.classList.remove('spinning'); }
-  }
-
-  function renderList(list) {
+  function renderList(list, dashData) {
     var now = new Date();
     var baseToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 30, 0);
     list.sort((a, b) => (a.price === "確認中" ? -1 : b.price === "確認中" ? 1 : a.price - b.price));
     currentList = list;
-    var html = '<div class="section"><div class="section-header">保有槍リスト</div>';
+
+    if (dashData) {
+        document.getElementById("yari-stats-header").innerText = `本数: ${dashData.yariCount}本 / 平均: $${dashData.avgPrice}`;
+    }
+
+    var html = '';
     list.forEach((y, i) => {
       var cycleClass = "active-cycle";
       if (y.price !== "確認中") {
@@ -279,7 +285,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
       html += `<div class="yari-top"><span class="badge badge-wait">${i+1}位</span><span class="yari-price">${fmt(y.price)}</span><span class="yari-date">${y.date}</span></div>`;
       html += `<div class="yari-sub"><span class="sell-val">数量：${y.qty} BTC</span></div></div>`;
     });
-    document.getElementById("yari-section").innerHTML = html + '</div>';
+    document.getElementById("yari-section").innerHTML = html;
   }
 
   function selectYari(id, price, num) {
@@ -323,25 +329,15 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     document.getElementById('tab-sell').className = 'tab-item' + (!isU ? ' active-red' : '');
   }
 
-async function addYari() {
+  async function addYari() {
     const p = parseFloat(document.getElementById("in-price").value);
     const btn = document.getElementById("btn-add-yari");
-    
-    // ボタンを無効化して、司令官の指示通りの文言に変更！
-    btn.disabled = true; 
-    btn.innerHTML = '<span class="small-spinner" style="border-color:#fff; border-top-color:transparent; margin-right:8px;"></span>ただいま追加中...';
-    
+    btn.disabled = true; btn.innerHTML = '<span class="small-spinner" style="border-color:#fff; border-top-color:transparent; margin-right:8px;"></span>ただいま追加中...';
     try {
       await callGAS({ action: "add", price: p, date: new Date().toISOString() });
-      await loadAllData(); 
-      showToast("配備完了！");
-    } catch (e) { 
-      showToast("エラーだぜ"); 
-    } finally {
-      // 終わったら元に戻す
-      btn.disabled = false; 
-      btn.innerText = "約定追加";
-    }
+      await loadAllData(); showToast("配備完了！");
+    } catch (e) { showToast("エラーだぜ"); }
+    finally { btn.disabled = false; btn.innerText = "約定追加"; }
   }
 
   function fetchBtcPrice() {
@@ -353,6 +349,12 @@ async function addYari() {
         var h = ""; for(var i=10; i>=-10; i--) { var p = base + i*500; h += `<option value="${p}" ${i==0?'selected':''}>$${p.toLocaleString()}</option>`; }
         sel.innerHTML = h;
     });
+  }
+
+  function closeSoldAlert() {
+    const time = document.getElementById('dash-lastUpdate').innerText;
+    localStorage.setItem('alert_closed_' + time, 'true');
+    document.getElementById('sold-alert').style.display = 'none';
   }
 
   window.onload = () => { fetchBtcPrice(); loadAllData(); setInterval(update1730Badge, 60000); };
