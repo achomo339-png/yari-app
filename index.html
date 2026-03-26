@@ -24,7 +24,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .sync-btn.spinning { animation: spin 1s linear infinite; pointer-events: none; }
 .notification-dot { display: none; position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #ff5252; border-radius: 50%; border: 2px solid #1a73e8; box-shadow: 0 0 5px rgba(255,82,82,0.8); }
 
-/* ダッシュボード (3列グリッド・大型化版) */
+/* ダッシュボード (3列グリッド・縦線完全修正) */
 .dashboard-container { background: #fff; border-radius: 12px; margin: 10px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
 .dash-title { font-size: 12px; font-weight: 700; color: #1a73e8; }
@@ -68,12 +68,13 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .yari-date { font-size: 11px; color: #9aa0a6; }
 .sell-val { font-size: 14px; color: #1e8e3e; font-weight: 700; }
 
-/* スケルトン */
+/* スケルトン & 共通アニメーション */
 @keyframes skeleton-shimmer { 0% { background-position: -200px 0; } 100% { background-position: calc(200px + 100%) 0; } }
 .skeleton { background: linear-gradient(90deg, #f0f2f5 25%, #e0e2e5 50%, #f0f2f5 75%); background-size: 200px 100%; animation: skeleton-shimmer 1.5s infinite linear; color: transparent !important; border-radius: 4px; display: inline-block; min-width: 40px; }
 .placeholder-card { background: #e8eaed; border: 1px dashed #bdc1c6; opacity: 0.6; display: flex; align-items: center; justify-content: center; height: 74px; margin-bottom: 6px; border-radius: 10px; }
+.small-spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; }
 
-/* アクションバー & トースト */
+/* アクションバー */
 .action-bar { background: #e8f0fe; border-radius: 12px; padding: 14px; margin: 0 10px 8px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
 .action-bar.hidden { display: none; }
 .tab-container { display: flex; gap: 5px; margin-bottom: 12px; border-bottom: 1px solid #d1d9e6; }
@@ -82,18 +83,19 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .tab-item.active-red { color: #d93025; border-bottom: 3px solid #d93025; }
 .action-area.hidden { display: none !important; }
 .action-buttons { display: flex; gap: 10px; margin-top: 12px; }
-.btn-cancel, .btn-confirm { flex: 1; padding: 12px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; border: none; }
+.btn-cancel, .btn-confirm { flex: 1; padding: 12px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; border: none; transition: opacity 0.2s; }
 .btn-cancel { background: #fff; color: #5f6368; border: 1px solid #dadce0; }
 .btn-confirm { background: #d93025; color: #fff; }
 .btn-blue { background: #1a73e8 !important; }
+.btn-confirm:disabled { opacity: 0.7; cursor: not-allowed; }
 
-/* 入力エリア */
 .action-bar select, .action-bar input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #dadce0; font-size: 16px; margin-bottom: 8px; background: #fff; box-sizing: border-box; }
 .input-label { font-size: 11px; color: #5f6368; margin-bottom: 4px; font-weight: 700; }
 
 .add-section { padding: 0 10px 20px; }
 .add-card { background: #fff; border-radius: 12px; padding: 14px; }
 .btn-add { width: 100%; background: #1a73e8; color: #fff; border: none; border-radius: 10px; padding: 14px; font-weight: 700; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-add:disabled { background: #bdc1c6; }
 
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #202124; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity 0.3s; z-index: 100; pointer-events: none; }
@@ -121,7 +123,6 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     <div class="dash-item"><div class="dash-label">総資産</div><div class="dash-value" id="dash-totalUsd"></div></div>
     <div class="dash-item"><div class="dash-label">資産前日比</div><div class="dash-value" id="dash-diffYesterday"></div></div>
     <div class="dash-item"><div class="dash-label">資産年初比</div><div class="dash-value" id="dash-diffYearly"></div></div>
-    
     <div class="dash-item"><div class="dash-label">昨日の利益</div><div class="dash-value plus" id="dash-interestYesterday"></div></div>
     <div class="dash-item"><div class="dash-label">今月の利益</div><div class="dash-value plus" id="dash-interestMonthly"></div></div>
     <div class="dash-item"><div class="dash-label">今年の利益</div><div class="dash-value plus" id="dash-interestYearly"></div></div>
@@ -266,11 +267,6 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     document.getElementById('dash-interestMonthly').innerText = "+$" + data.interestMonthly;
     document.getElementById('dash-interestYearly').innerText = "+$" + data.interestYearly;
     if (data.aiComment) document.getElementById('ai-comment').innerText = data.aiComment;
-    const alertBox = document.getElementById('sold-alert');
-    if (data.soldMessage && !localStorage.getItem('alert_closed_' + data.lastUpdate)) {
-      document.getElementById('sold-text').innerText = data.soldMessage;
-      alertBox.style.display = 'flex';
-    } else { alertBox.style.display = 'none'; }
   }
 
   function renderList(list, dashData) {
@@ -303,59 +299,70 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     document.getElementById("action-bar").classList.remove("hidden");
     const isK = (price === "確認中" || price === 0 || !price);
     document.getElementById("action-title").innerHTML = "槍" + num + " " + (isK ? "価格未確定" : fmt(price));
-
-    // 数量のデフォルトセット
     document.getElementById("new-yari-qty").value = qty;
-
     var baseP = isK ? Math.round(btcPrice / 500) * 500 : Number(price);
     var opts = ""; for (var i = 10; i >= -10; i--) { var p = baseP + (i * 500); opts += `<option value="${p}" ${i===0?'selected':''}>${fmt(p)}</option>`; }
-    
     document.getElementById('new-yari-price').innerHTML = opts;
     document.getElementById('sell-yari-price').innerHTML = opts;
-
     if (isK) switchTab('update'); else switchTab('sell');
-    renderList(currentList);
+    renderList(currentList, null);
   }
 
-  // ★ 数量と価格の両方を更新するように変更
+  // --- 統一された通信プロトコル ---
+
   async function confirmUpdateInfo() {
-    const newP = document.getElementById('new-yari-price').value;
-    const newQ = document.getElementById('new-yari-qty').value;
-    showToast("更新中...");
+    const btn = document.querySelector("#area-update .btn-confirm");
+    btn.disabled = true;
+    btn.innerHTML = '<span class="small-spinner"></span> 更新中...';
     try {
-      // action: updatePrice から updateInfo に変更（GAS側の修正が必要だぜ）
-      const res = await callGAS({ action: "updateInfo", id: selectedId, price: newP, qty: newQ });
-      if (res.success) { await loadAllData(); clearSelection(); showToast("更新完了！"); }
-    } catch (e) { showToast("通信エラー"); }
+      const res = await callGAS({ action: "updateInfo", id: selectedId, price: document.getElementById('new-yari-price').value, qty: document.getElementById('new-yari-qty').value });
+      if (res.success) { await loadAllData(); clearSelection(); showToast("情報の研磨、完了だぜ！"); }
+    } catch (e) { showToast("通信失敗だぜ"); }
+    finally { btn.disabled = false; btn.innerText = "情報を確定"; }
   }
 
   async function confirmSell() {
-    const sellP = document.getElementById('sell-yari-price').value;
-    showToast("売却中...");
+    const btn = document.querySelector("#area-sell .btn-confirm");
+    btn.disabled = true;
+    btn.innerHTML = '<span class="small-spinner"></span> 売却処理中...';
     try {
-      await callGAS({ action: "sell", id: selectedId, price: sellP });
-      await loadAllData(); clearSelection(); showToast("利確完了！");
-    } catch (e) { showToast("エラーだぜ"); }
+      const res = await callGAS({ action: "sell", id: selectedId, price: document.getElementById('sell-yari-price').value });
+      if (res.success) { await loadAllData(); clearSelection(); showToast("利確完了！戦果を記録したぜ。"); }
+    } catch (e) { showToast("通信失敗だぜ"); }
+    finally { btn.disabled = false; btn.innerText = "売却済みにする"; }
   }
 
-  function clearSelection() { selectedId = null; document.getElementById("action-bar").classList.add("hidden"); renderList(currentList); }
+  async function addYari() {
+    const btn = document.getElementById("btn-add-yari");
+    btn.disabled = true;
+    btn.innerHTML = '<span class="small-spinner"></span> ただいま追加中...';
+    try {
+      await callGAS({ action: "add", price: document.getElementById("in-price").value, date: new Date().toISOString() });
+      await loadAllData(); showToast("新しい槍を配備したぜ！");
+    } catch (e) { showToast("エラーだぜ"); }
+    finally { btn.disabled = false; btn.innerText = "約定追加"; }
+  }
+
+  async function manualSync() {
+    const icon = document.getElementById('sync-icon');
+    icon.classList.add('spinning');
+    showToast("同期中だぜ！");
+    try {
+      await callGAS({ action: "sync" });
+      localStorage.setItem('last_sync_date', new Date().toLocaleDateString());
+      await loadAllData();
+      showToast("同期完了！");
+    } catch (e) { showToast("通信エラー"); }
+    finally { icon.classList.remove('spinning'); }
+  }
+
+  function clearSelection() { selectedId = null; document.getElementById("action-bar").classList.add("hidden"); renderList(currentList, null); }
   function switchTab(t) {
     const isU = (t === 'update');
     document.getElementById('area-update').classList.toggle('hidden', !isU);
     document.getElementById('area-sell').classList.toggle('hidden', isU);
     document.getElementById('tab-update').className = 'tab-item' + (isU ? ' active-blue' : '');
     document.getElementById('tab-sell').className = 'tab-item' + (!isU ? ' active-red' : '');
-  }
-
-  async function addYari() {
-    const p = parseFloat(document.getElementById("in-price").value);
-    const btn = document.getElementById("btn-add-yari");
-    btn.disabled = true; btn.innerHTML = '<span class="small-spinner" style="border-color:#fff; border-top-color:transparent; margin-right:8px;"></span>ただいま追加中...';
-    try {
-      await callGAS({ action: "add", price: p, date: new Date().toISOString() });
-      await loadAllData(); showToast("配備完了！");
-    } catch (e) { showToast("エラーだぜ"); }
-    finally { btn.disabled = false; btn.innerText = "約定追加"; }
   }
 
   function fetchBtcPrice() {
