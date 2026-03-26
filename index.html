@@ -24,19 +24,29 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .sync-btn.spinning { animation: spin 1s linear infinite; pointer-events: none; }
 .notification-dot { display: none; position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #ff5252; border-radius: 50%; border: 2px solid #1a73e8; box-shadow: 0 0 5px rgba(255,82,82,0.8); }
 
-/* ダッシュボード (3列グリッド) */
+/* ダッシュボード (3列グリッド・縦線完全修正) */
 .dashboard-container { background: #fff; border-radius: 12px; margin: 10px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
 .dash-title { font-size: 12px; font-weight: 700; color: #1a73e8; }
 .dash-time { font-size: 10px; color: #9aa0a6; }
-.dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.dash-item { text-align: center; padding: 6px 0; border-right: 1px solid #f1f3f4; }
-.dash-item:nth-child(3n) { border-right: none; }
+
+.dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: none; }
+.dash-item { 
+  text-align: center; 
+  padding: 8px 0; 
+  border-right: 1px solid #f1f3f4; /* すべてに右線を引く */
+}
+.dash-item:nth-child(3n) { 
+  border-right: none; /* 右端（3列目）だけ線を消す */
+}
+.dash-item:nth-child(-n+3) { 
+  border-bottom: 1px solid #f1f3f4; /* 上段3つに下線を引く */
+}
+
 .dash-label { font-size: 9px; color: #5f6368; margin-bottom: 2px; font-weight: 600; }
-.dash-value { font-size: 13px; font-weight: 700; color: #202124; min-height: 18px; white-space: nowrap; }
+.dash-value { font-size: 12px; font-weight: 700; color: #202124; min-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; }
 .dash-value.plus { color: #1e8e3e; }
 .dash-value.minus { color: #d93025; }
-.dash-divider { grid-column: span 3; height: 1px; background: #f1f3f4; margin: 4px 0; }
 
 /* AI短評 */
 .ai-briefing { background: #1a73e8; color: #fff; margin: 0 10px 10px; border-radius: 10px; box-shadow: 0 4px 12px rgba(26,115,232,0.2); overflow: hidden; }
@@ -71,7 +81,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .skeleton { background: linear-gradient(90deg, #f0f2f5 25%, #e0e2e5 50%, #f0f2f5 75%); background-size: 200px 100%; animation: skeleton-shimmer 1.5s infinite linear; color: transparent !important; border-radius: 4px; display: inline-block; min-width: 40px; }
 .placeholder-card { background: #e8eaed; border: 1px dashed #bdc1c6; opacity: 0.6; display: flex; align-items: center; justify-content: center; height: 74px; margin-bottom: 6px; border-radius: 10px; }
 
-/* アクションバー */
+/* アクションバー & トースト */
 .action-bar { background: #e8f0fe; border-radius: 12px; padding: 14px; margin: 0 10px 8px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
 .action-bar.hidden { display: none; }
 .tab-container { display: flex; gap: 5px; margin-bottom: 12px; border-bottom: 1px solid #d1d9e6; }
@@ -116,8 +126,6 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     <div class="dash-item"><div class="dash-label">総資産</div><div class="dash-value" id="dash-totalUsd"></div></div>
     <div class="dash-item"><div class="dash-label">資産前日比</div><div class="dash-value" id="dash-diffYesterday"></div></div>
     <div class="dash-item"><div class="dash-label">資産年初比</div><div class="dash-value" id="dash-diffYearly"></div></div>
-    
-    <div class="dash-divider"></div>
     
     <div class="dash-item"><div class="dash-label">昨日の利息</div><div class="dash-value plus" id="dash-interestYesterday"></div></div>
     <div class="dash-item"><div class="dash-label">今月の利息</div><div class="dash-value plus" id="dash-interestMonthly"></div></div>
@@ -234,27 +242,17 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
       const monthDay = parseInt(dateParts[1]) + "/" + parseInt(dateParts[2]);
       document.getElementById('ai-time').innerText = monthDay + " " + parts[1] + " 更新";
     }
-    
-    // 資産
     document.getElementById('dash-totalUsd').innerText = "$" + data.totalUsd;
-    
-    // 前日比
     const dy = parseFloat(data.diffYesterday);
     document.getElementById('dash-diffYesterday').innerText = (dy >= 0 ? "+$" : "-$") + Math.abs(dy).toLocaleString();
     document.getElementById('dash-diffYesterday').className = "dash-value " + (dy >= 0 ? "plus" : "minus");
-    
-    // 年初比
     const dyear = parseFloat(data.diffYearly);
     document.getElementById('dash-diffYearly').innerText = (dyear >= 0 ? "+$" : "-$") + Math.abs(dyear).toLocaleString();
     document.getElementById('dash-diffYearly').className = "dash-value " + (dyear >= 0 ? "plus" : "minus");
-
-    // 利息
     document.getElementById('dash-interestYesterday').innerText = "+$" + data.interestYesterday;
     document.getElementById('dash-interestMonthly').innerText = "+$" + data.interestMonthly;
     document.getElementById('dash-interestYearly').innerText = "+$" + data.interestYearly;
-    
     if (data.aiComment) document.getElementById('ai-comment').innerText = data.aiComment;
-
     const alertBox = document.getElementById('sold-alert');
     if (data.soldMessage && !localStorage.getItem('alert_closed_' + data.lastUpdate)) {
       document.getElementById('sold-text').innerText = data.soldMessage;
@@ -267,11 +265,9 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     var baseToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 30, 0);
     list.sort((a, b) => (a.price === "確認中" ? -1 : b.price === "確認中" ? 1 : a.price - b.price));
     currentList = list;
-
     if (dashData) {
         document.getElementById("yari-stats-header").innerText = `本数: ${dashData.yariCount}本 / 平均: $${dashData.avgPrice}`;
     }
-
     var html = '';
     list.forEach((y, i) => {
       var cycleClass = "active-cycle";
