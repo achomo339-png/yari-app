@@ -323,15 +323,25 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
     document.getElementById('tab-sell').className = 'tab-item' + (!isU ? ' active-red' : '');
   }
 
-  async function addYari() {
+async function addYari() {
     const p = parseFloat(document.getElementById("in-price").value);
     const btn = document.getElementById("btn-add-yari");
-    btn.disabled = true; btn.innerHTML = '<span class="small-spinner" style="border-color:#fff; border-top-color:transparent;"></span>中...';
+    
+    // ボタンを無効化して、司令官の指示通りの文言に変更！
+    btn.disabled = true; 
+    btn.innerHTML = '<span class="small-spinner" style="border-color:#fff; border-top-color:transparent; margin-right:8px;"></span>ただいま追加中...';
+    
     try {
       await callGAS({ action: "add", price: p, date: new Date().toISOString() });
-      await loadAllData(); showToast("配備完了！");
-    } catch (e) { showToast("エラーだぜ"); }
-    finally { btn.disabled = false; btn.innerText = "約定追加"; }
+      await loadAllData(); 
+      showToast("配備完了！");
+    } catch (e) { 
+      showToast("エラーだぜ"); 
+    } finally {
+      // 終わったら元に戻す
+      btn.disabled = false; 
+      btn.innerText = "約定追加";
+    }
   }
 
   function fetchBtcPrice() {
