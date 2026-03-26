@@ -24,7 +24,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .sync-btn.spinning { animation: spin 1s linear infinite; pointer-events: none; }
 .notification-dot { display: none; position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #ff5252; border-radius: 50%; border: 2px solid #1a73e8; box-shadow: 0 0 5px rgba(255,82,82,0.8); }
 
-/* ダッシュボード (3列グリッド・縦線完全修正) */
+/* ダッシュボード (3列グリッド・大型化版) */
 .dashboard-container { background: #fff; border-radius: 12px; margin: 10px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
 .dash-title { font-size: 12px; font-weight: 700; color: #1a73e8; }
@@ -33,18 +33,14 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: none; }
 .dash-item { 
   text-align: center; 
-  padding: 8px 0; 
-  border-right: 1px solid #f1f3f4; /* すべてに右線を引く */
+  padding: 10px 0; /* 上下パディングを増やしてデカ文字を強調 */
+  border-right: 1px solid #f1f3f4; /* 縦線 */
 }
-.dash-item:nth-child(3n) { 
-  border-right: none; /* 右端（3列目）だけ線を消す */
-}
-.dash-item:nth-child(-n+3) { 
-  border-bottom: 1px solid #f1f3f4; /* 上段3つに下線を引く */
-}
+.dash-item:nth-child(3n) { border-right: none; } /* 各行の右端だけ線を消す */
+.dash-item:nth-child(-n+3) { border-bottom: 1px solid #f1f3f4; } /* 上段3つに下線を引く */
 
-.dash-label { font-size: 9px; color: #5f6368; margin-bottom: 2px; font-weight: 600; }
-.dash-value { font-size: 12px; font-weight: 700; color: #202124; min-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px; }
+.dash-label { font-size: 10px; color: #5f6368; margin-bottom: 4px; font-weight: 600; }
+.dash-value { font-size: 14px; font-weight: 800; color: #202124; min-height: 20px; white-space: nowrap; overflow: hidden; text-overflow: clip; padding: 0 1px; letter-spacing: -0.02em; }
 .dash-value.plus { color: #1e8e3e; }
 .dash-value.minus { color: #d93025; }
 
