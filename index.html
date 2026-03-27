@@ -1,41 +1,27 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<link rel="manifest" href="manifest.json">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>三浦司令室 - 槍管理</title>
 <style>
-/* --- 既存スタイル維持 --- */
-html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f2f5; color: #202124; font-size: 16px; width: 100%; overflow-x: hidden; }
-*, *::before, *::after { box-sizing: border-box; }
+/* --- 共通スタイル --- */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f2f5; color: #202124; font-size: 16px; overflow-x: hidden; }
 
-.header { background: #1a73e8; color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; width: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+/* ヘッダー */
+.header { background: #1a73e8; color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 .header-title { font-size: 20px; font-weight: 700; }
 .header-price { font-size: 16px; font-weight: 600; opacity: 0.95; }
 
-/* ★キラキラエフェクト (Shimmer) */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-.dash-value { 
-  font-size: 14px; font-weight: 800; color: #202124; min-height: 20px; 
-  display: inline-block; position: relative;
-}
-.loading .dash-value {
-  color: transparent !important;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite linear;
-  border-radius: 4px;
-  width: 80%;
-}
+/* キラキラエフェクト (Shimmer) */
+@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+.dash-value { font-size: 14px; font-weight: 800; min-height: 20px; display: inline-block; position: relative; }
+.loading .dash-value { color: transparent !important; background: linear-gradient(90deg, #f0f0f0 25%, #e0e2e5 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite linear; border-radius: 4px; width: 60px; }
 
 /* ダッシュボード */
 .dashboard-container { background: #fff; border-radius: 12px; margin: 10px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+.dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
 .dash-item { text-align: center; padding: 10px 0; border-right: 1px solid #f1f3f4; }
 .dash-item:nth-child(3n) { border-right: none; }
 .dash-item:nth-child(-n+3) { border-bottom: 1px solid #f1f3f4; }
@@ -43,161 +29,202 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .plus { color: #1e8e3e !important; }
 .minus { color: #d93025 !important; }
 
-/* ★槍リスト：4本分の固定スペース & グルグル */
-.yari-container {
-  min-height: 340px; /* 槍カード約80px×4 + 余白 */
-  position: relative;
-  width: 100%;
-}
-.list-loader {
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  display: none;
-}
-.yari-container.loading .list-loader { display: block; }
-.yari-container.loading #yari-section { opacity: 0.3; }
-
-.big-spinner {
-  width: 50px; height: 50px;
-  border: 4px solid rgba(26, 115, 232, 0.1);
-  border-top: 4px solid #1a73e8;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 10px;
-}
+/* 槍リスト固定スペース & グルグル */
+.yari-container { min-height: 340px; position: relative; width: 100%; }
+.list-loader { position: absolute; top: 120px; left: 50%; transform: translateX(-50%); text-align: center; display: none; z-index: 5; }
+.loading .list-loader { display: block; }
+.loading #yari-section { opacity: 0.2; pointer-events: none; }
+.big-spinner { width: 50px; height: 50px; border: 4px solid rgba(26, 115, 232, 0.1); border-top: 4px solid #1a73e8; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 /* 槍カード */
-.yari-card { background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 6px; cursor: pointer; border: 2px solid transparent; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.2s; }
-.active-cycle { border-color: #1a73e8; }
+.yari-card { background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 6px; cursor: pointer; border: 2px solid transparent; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .selected { border-color: #d93025 !important; background: #fce8e6; }
 .yari-price { font-size: 20px; font-weight: 700; flex: 1; }
 
-/* その他UI */
-.sync-btn { cursor: pointer; position: relative; }
-.spinning { animation: spin 1s linear infinite; pointer-events: none; }
-.notification-dot { display: none; position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #ff5252; border-radius: 50%; border: 2px solid #1a73e8; }
+/* アクションバー */
+.action-bar { background: #e8f0fe; border-radius: 12px; padding: 14px; margin: 0 10px 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
 .hidden { display: none !important; }
+.tab-container { display: flex; gap: 5px; margin-bottom: 12px; border-bottom: 1px solid #d1d9e6; }
+.tab-item { flex: 1; text-align: center; padding: 10px; font-size: 14px; font-weight: 700; color: #5f6368; cursor: pointer; }
+.active-blue { color: #1a73e8; border-bottom: 3px solid #1a73e8; }
+.active-red { color: #d93025; border-bottom: 3px solid #d93025; }
+.action-buttons { display: flex; gap: 10px; margin-top: 12px; }
+.btn { flex: 1; padding: 12px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; border: none; }
+.btn-cancel { background: #fff; color: #5f6368; border: 1px solid #dadce0; }
+.btn-confirm { background: #d93025; color: #fff; }
+.btn-blue { background: #1a73e8 !important; }
+select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #dadce0; font-size: 16px; margin-bottom: 8px; background: #fff; }
+
+/* トースト */
 .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #202124; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity 0.3s; z-index: 100; pointer-events: none; }
 .toast.show { opacity: 1; }
 </style>
 </head>
-<body class="loading"> <div class="header">
+<body class="loading">
+
+<div class="header">
   <div class="header-title">三浦司令室</div>
-  <div class="header-right">
-    <span class="sync-btn" id="sync-icon" onclick="manualSync()">🔄<span id="sync-badge" class="notification-dot"></span></span>
+  <div class="header-right" style="display:flex; align-items:center; gap:12px;">
+    <span class="sync-btn" id="sync-icon" onclick="manualSync()" style="cursor:pointer;">🔄</span>
     <div class="header-price" id="btc-price">---</div>
   </div>
 </div>
 
-<div class="dashboard-container" id="dash-board">
-  <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-    <span style="font-size: 12px; font-weight: 700; color: #1a73e8;">管制塔</span>
-    <span id="dash-lastUpdate" style="font-size: 10px; color: #9aa0a6;">---</span>
+<div class="dashboard-container">
+  <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+    <span style="font-size:12px; font-weight:700; color:#1a73e8;">管制塔 ステータス</span>
+    <span id="dash-lastUpdate" style="font-size:10px; color:#9aa0a6;">---</span>
   </div>
   <div class="dash-grid">
     <div class="dash-item"><div class="dash-label">総資産</div><div class="dash-value" id="dash-totalUsd"></div></div>
     <div class="dash-item"><div class="dash-label">前日比</div><div class="dash-value" id="dash-diffYesterday"></div></div>
     <div class="dash-item"><div class="dash-label">年初比</div><div class="dash-value" id="dash-diffYearly"></div></div>
-    <div class="dash-item"><div class="dash-label">昨日の利益</div><div class="dash-value plus" id="dash-interestYesterday"></div></div>
-    <div class="dash-item"><div class="dash-label">今月の利益</div><div class="dash-value plus" id="dash-interestMonthly"></div></div>
-    <div class="dash-item"><div class="dash-label">今年の利益</div><div class="dash-value plus" id="dash-interestYearly"></div></div>
+    <div class="dash-item"><div class="dash-label">昨日利益</div><div class="dash-value plus" id="dash-interestYesterday"></div></div>
+    <div class="dash-item"><div class="dash-label">今月利益</div><div class="dash-value plus" id="dash-interestMonthly"></div></div>
+    <div class="dash-item"><div class="dash-label">今年利益</div><div class="dash-value plus" id="dash-interestYearly"></div></div>
   </div>
 </div>
 
 <div class="section">
-  <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-left: 4px solid #1a73e8; padding-left: 8px;">
-    <span style="font-size: 14px; font-weight: 700;">槍部隊</span>
-    <span id="yari-stats-header" style="font-size: 11px; color: #5f6368;">待機中...</span>
+  <div style="display:flex; justify-content:space-between; margin:12px 0 8px; border-left:4px solid #1a73e8; padding-left:8px;">
+    <span style="font-weight:700;">保有槍部隊</span>
+    <span id="yari-stats-header" style="font-size:11px; color:#5f6368;">読込中...</span>
   </div>
-  <div class="yari-container loading" id="yari-container">
-    <div class="list-loader">
-      <div class="big-spinner"></div>
-      <div style="font-size: 12px; color: #1a73e8; font-weight: 700;">通信中...</div>
-    </div>
+  <div class="yari-container" id="yari-container">
+    <div class="list-loader"><div class="big-spinner"></div><div style="font-size:12px; color:#1a73e8; font-weight:700;">通信中...</div></div>
     <div id="yari-section"></div>
+  </div>
+</div>
+
+<div class="action-bar hidden" id="action-bar">
+  <div class="tab-container">
+    <div id="tab-update" class="tab-item" onclick="switchTab('update')">情報更新</div>
+    <div id="tab-sell" class="tab-item" onclick="switchTab('sell')">売却</div>
+  </div>
+  <div id="area-update" class="action-area">
+    <div style="font-size:11px; font-weight:700; margin-bottom:4px; color:#5f6368;">約定価格 / 数量</div>
+    <select id="new-yari-price"></select>
+    <input type="number" id="new-yari-qty" step="0.0001" inputmode="decimal">
+    <div class="action-buttons"><button class="btn btn-cancel" onclick="clearSelection()">取消</button><button class="btn btn-confirm btn-blue" onclick="execAction('updateInfo')">確定</button></div>
+  </div> 
+  <div id="area-sell" class="action-area hidden">
+    <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span style="font-size:11px; font-weight:700; color:#5f6368;">売却価格</span><span id="profit-preview" style="font-size:12px; font-weight:800;"></span></div>
+    <select id="sell-yari-price" onchange="calcProfit()"></select>
+    <div class="action-buttons"><button class="btn btn-cancel" onclick="clearSelection()">取消</button><button class="btn btn-confirm" onclick="execAction('sell')">売却完了</button></div>
+  </div>
+</div>
+
+<div class="add-section" style="padding:0 10px 20px;">
+  <div style="background:#fff; border-radius:12px; padding:14px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <div style="font-size:11px; font-weight:700; color:#5f6368; margin-bottom:4px;">新規約定価格</div>
+    <select id="in-price" style="margin-bottom:10px;"></select>
+    <button class="btn btn-blue" style="width:100%; height:50px;" onclick="execAction('add')">槍を新規配備する</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-  var GAS_URL = "https://script.google.com/macros/s/AKfycbyPiAYrI1IDI5DPRtUFd--wOZBLY4FTwiovI4iSys_cmQm2LhqUvE5s1Rz5PJqfT5RRjQ/exec";
-  var btcPrice = 0;
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyPiAYrI1IDI5DPRtUFd--wOZBLY4FTwiovI4iSys_cmQm2LhqUvE5s1Rz5PJqfT5RRjQ/exec";
+let selectedYari = null, btcPrice = 0, currentList = [];
 
-  function showToast(msg) { var t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"), 2500); }
+const $ = id => document.getElementById(id);
+const showToast = msg => { $("toast").textContent = msg; $("toast").classList.add("show"); setTimeout(() => $("toast").classList.remove("show"), 2500); };
 
-  async function loadAllData() {
-    // 読み込み開始エフェクトON
-    document.body.classList.add("loading");
-    document.getElementById("yari-container").classList.add("loading");
-
-    try {
-      const response = await fetch(GAS_URL + "?action=all");
-      const data = await response.json();
-      
-      // ダッシュボード反映
-      const d = data.dashboard;
-      document.getElementById('dash-lastUpdate').innerText = d.lastUpdate;
-      document.getElementById('dash-totalUsd').innerText = "$" + d.totalUsd;
-      
-      const setDiff = (id, val) => {
-        const el = document.getElementById('dash-' + id);
-        el.innerText = (val >= 0 ? "+$" : "-$") + Math.abs(val).toLocaleString();
-        el.className = "dash-value " + (val >= 0 ? "plus" : "minus");
-      };
-      setDiff('diffYesterday', parseFloat(d.diffYesterday));
-      setDiff('diffYearly', parseFloat(d.diffYearly));
-      
-      document.getElementById('dash-interestYesterday').innerText = "+$" + d.interestYesterday;
-      document.getElementById('dash-interestMonthly').innerText = "+$" + d.interestMonthly;
-      document.getElementById('dash-interestYearly').innerText = "+$" + d.interestYearly;
-
-      // 槍リスト反映
-      renderList(data.list, d);
-
-    } catch (e) { showToast("通信エラーだぜ"); }
-    finally {
-      // エフェクト解除
-      document.body.classList.remove("loading");
-      document.getElementById("yari-container").classList.remove("loading");
-    }
-  }
-
-  function renderList(list, d) {
-    document.getElementById("yari-stats-header").innerText = `本数: ${d.yariCount}本 / 平均: $${d.avgPrice}`;
-    var html = '';
-    list.sort((a, b) => (a.price === "確認中" ? -1 : b.price === "確認中" ? 1 : a.price - b.price));
+async function loadAllData() {
+  document.body.classList.add("loading");
+  try {
+    const data = await (await fetch(`${GAS_URL}?action=all`)).json();
+    const d = data.dashboard;
+    $("dash-lastUpdate").innerText = d.lastUpdate;
+    $("dash-totalUsd").innerText = "$" + d.totalUsd;
+    $("dash-interestYesterday").innerText = "+$" + d.interestYesterday;
+    $("dash-interestMonthly").innerText = "+$" + d.interestMonthly;
+    $("dash-interestYearly").innerText = "+$" + d.interestYearly;
     
-    list.forEach((y, i) => {
-      html += `<div class="yari-card active-cycle">`;
-      html += `<div style="display:flex; align-items:center; gap:8px;">`;
-      html += `<span style="background:#e8f0fe; color:#1967d2; padding:2px 6px; border-radius:4px; font-size:10px;">${i+1}</span>`;
-      html += `<span class="yari-price">${y.price === "確認中" ? "確認中" : "$" + Number(y.price).toLocaleString()}</span>`;
-      html += `</div><div style="font-size:12px; color:#1e8e3e; font-weight:700; margin-top:4px;">数量: ${y.qty} BTC</div></div>`;
+    [['diffYesterday', d.diffYesterday], ['diffYearly', d.diffYearly]].forEach(([id, v]) => {
+      const el = $("dash-" + id);
+      el.innerText = (parseFloat(v) >= 0 ? "+$" : "-$") + Math.abs(v).toLocaleString();
+      el.className = "dash-value " + (parseFloat(v) >= 0 ? "plus" : "minus");
     });
-    document.getElementById("yari-section").innerHTML = html;
-  }
 
-  async function manualSync() {
-    const icon = document.getElementById('sync-icon');
-    icon.classList.add('spinning');
-    try {
-      await fetch(GAS_URL + "?action=sync");
-      showToast("同期完了！");
-      await loadAllData();
-    } finally { icon.classList.remove('spinning'); }
-  }
+    currentList = data.list;
+    renderList(data.list, d);
+  } catch (e) { showToast("通信エラーだぜ"); }
+  finally { document.body.classList.remove("loading"); }
+}
 
-  function fetchBtcPrice() {
-    fetch("https://api.bitget.com/api/v2/spot/market/tickers?symbol=BTCUSDT").then(r => r.json()).then(d => {
-        btcPrice = parseFloat(d.data[0].lastPr);
-        document.getElementById("btc-price").textContent = "$" + btcPrice.toLocaleString();
-    });
-  }
+function renderList(list, d) {
+  $("yari-stats-header").innerText = `本数: ${d.yariCount}本 / 平均: $${d.avgPrice}`;
+  list.sort((a, b) => (a.price === "確認中" ? -1 : b.price === "確認中" ? 1 : a.price - b.price));
+  $("yari-section").innerHTML = list.map((y, i) => `
+    <div class="yari-card ${selectedYari?.id == y.id ? 'selected' : ''}" onclick='selectYari(${JSON.stringify(y).replace(/'/g,"&apos;")}, ${i+1})'>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="background:#e8f0fe; color:#1967d2; padding:2px 6px; border-radius:4px; font-size:10px;">${i+1}</span>
+        <span class="yari-price">${y.price=="確認中"?"確認中":"$"+Number(y.price).toLocaleString()}</span>
+      </div>
+      <div style="font-size:12px; color:#1e8e3e; font-weight:700; margin-top:4px;">数量: ${y.qty} BTC</div>
+    </div>`).join('');
+}
 
-  window.onload = () => { fetchBtcPrice(); loadAllData(); };
+function selectYari(y, num) {
+  if (selectedYari?.id == y.id) return clearSelection();
+  selectedYari = y;
+  $("action-bar").classList.remove("hidden");
+  $("new-yari-qty").value = y.qty;
+  const baseP = Math.round(((y.price == "確認中" ? btcPrice : y.price) || btcPrice) / 500) * 500;
+  const opts = Array.from({length: 21}, (_, i) => baseP + (10 - i) * 500)
+                    .map(p => `<option value="${p}" ${p==baseP?'selected':''}>$${p.toLocaleString()}</option>`).join('');
+  $("new-yari-price").innerHTML = opts; $("sell-yari-price").innerHTML = opts;
+  switchTab(y.price == "確認中" ? 'update' : 'sell');
+  calcProfit(); renderList(currentList, {yariCount:0, avgPrice:0}); // 選択強調
+}
+
+function calcProfit() {
+  if (!selectedYari) return;
+  const diff = (Number($("sell-yari-price").value) - Number(selectedYari.price || btcPrice)) * selectedYari.qty;
+  $("profit-preview").innerText = `${diff >= 0 ? '+' : '-'}$${Math.abs(diff).toFixed(2)} 変動`;
+  $("profit-preview").style.color = diff >= 0 ? "#1e8e3e" : "#d93025";
+}
+
+async function execAction(act) {
+  const btn = event.target; btn.disabled = true;
+  let p = { action: act };
+  if (act == 'updateInfo') Object.assign(p, { id: selectedYari.id, price: $("new-yari-price").value, qty: $("new-yari-qty").value });
+  if (act == 'sell') Object.assign(p, { id: selectedYari.id, price: $("sell-yari-price").value });
+  if (act == 'add') Object.assign(p, { price: $("in-price").value, date: new Date().toISOString() });
+  try {
+    const res = await (await fetch(`${GAS_URL}?${new URLSearchParams(p)}`)).json();
+    if (res.success || act == 'add') { await loadAllData(); clearSelection(); showToast("完了だぜ！"); }
+  } catch (e) { showToast("通信エラーだぜ"); }
+  finally { btn.disabled = false; }
+}
+
+function clearSelection() { selectedYari = null; $("action-bar").classList.add("hidden"); renderList(currentList, {yariCount:0, avgPrice:0}); }
+function switchTab(t) {
+  const isU = t == 'update';
+  $("area-update").classList.toggle("hidden", !isU); $("area-sell").classList.toggle("hidden", isU);
+  $("tab-update").className = "tab-item" + (isU ? " active-blue" : ""); $("tab-sell").className = "tab-item" + (!isU ? " active-red" : "");
+}
+
+function manualSync() {
+  $("sync-icon").style.animation = "spin 1s linear infinite";
+  fetch(`${GAS_URL}?action=sync`).then(() => { loadAllData(); showToast("同期完了！"); })
+  .finally(() => $("sync-icon").style.animation = "");
+}
+
+function fetchBtcPrice() {
+  fetch("https://api.bitget.com/api/v2/spot/market/tickers?symbol=BTCUSDT").then(r => r.json()).then(d => {
+    btcPrice = parseFloat(d.data[0].lastPr);
+    $("btc-price").textContent = "$" + btcPrice.toLocaleString();
+    const base = Math.round(btcPrice / 500) * 500;
+    $("in-price").innerHTML = Array.from({length: 21}, (_, i) => base + (10 - i) * 500)
+                                   .map(p => `<option value="${p}" ${p==base?'selected':''}>$${p.toLocaleString()}</option>`).join('');
+  });
+}
+
+window.onload = () => { fetchBtcPrice(); loadAllData(); setInterval(fetchBtcPrice, 60000); };
 </script>
 </body>
 </html>
