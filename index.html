@@ -4,183 +4,119 @@
 <link rel="manifest" href="manifest.json">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="槍管理">
-<meta name="theme-color" content="#1a73e8">
 <title>三浦司令室 - 槍管理</title>
 <style>
-/* --- 共通スタイル --- */
+/* --- 既存スタイル維持 --- */
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvetica Neue', Arial, sans-serif; background: #f0f2f5; color: #202124; font-size: 16px; width: 100%; overflow-x: hidden; }
 *, *::before, *::after { box-sizing: border-box; }
 
-/* ヘッダー */
 .header { background: #1a73e8; color: #fff; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; width: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 .header-title { font-size: 20px; font-weight: 700; }
-.header-right { display: flex; align-items: center; gap: 12px; }
 .header-price { font-size: 16px; font-weight: 600; opacity: 0.95; }
-.sync-btn { cursor: pointer; font-size: 18px; opacity: 0.8; transition: opacity 0.2s; padding: 4px; position: relative; }
-.sync-btn.spinning { animation: spin 1s linear infinite; pointer-events: none; }
-.notification-dot { display: none; position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #ff5252; border-radius: 50%; border: 2px solid #1a73e8; box-shadow: 0 0 5px rgba(255,82,82,0.8); }
 
-/* ダッシュボード (3列グリッド・大型化版) */
+/* ★キラキラエフェクト (Shimmer) */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.dash-value { 
+  font-size: 14px; font-weight: 800; color: #202124; min-height: 20px; 
+  display: inline-block; position: relative;
+}
+.loading .dash-value {
+  color: transparent !important;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 4px;
+  width: 80%;
+}
+
+/* ダッシュボード */
 .dashboard-container { background: #fff; border-radius: 12px; margin: 10px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
-.dash-title { font-size: 12px; font-weight: 700; color: #1a73e8; }
-.dash-time { font-size: 10px; color: #9aa0a6; }
-
-.dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: none; }
+.dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
 .dash-item { text-align: center; padding: 10px 0; border-right: 1px solid #f1f3f4; }
 .dash-item:nth-child(3n) { border-right: none; }
 .dash-item:nth-child(-n+3) { border-bottom: 1px solid #f1f3f4; }
-
 .dash-label { font-size: 10px; color: #5f6368; margin-bottom: 4px; font-weight: 600; }
-.dash-value { font-size: 14px; font-weight: 800; color: #202124; min-height: 20px; white-space: nowrap; overflow: hidden; text-overflow: clip; padding: 0 1px; letter-spacing: -0.02em; }
-.dash-value.plus { color: #1e8e3e; }
-.dash-value.minus { color: #d93025; }
+.plus { color: #1e8e3e !important; }
+.minus { color: #d93025 !important; }
 
-/* AI短評 */
-.ai-briefing { background: #1a73e8; color: #fff; margin: 0 10px 10px; border-radius: 10px; box-shadow: 0 4px 12px rgba(26,115,232,0.2); overflow: hidden; }
-.ai-briefing-header { padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
-.ai-briefing-label { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.9; position: relative; }
-.ai-dot { display: none; width: 6px; height: 6px; background: #ff5252; border-radius: 50%; display: inline-block; margin-left: 5px; vertical-align: middle; }
-.ai-toggle-icon { font-size: 14px; transition: transform 0.3s; transform: rotate(0deg); }
-.ai-briefing.collapsed .ai-toggle-icon { transform: rotate(-90deg); }
-.ai-briefing-content { max-height: 2000px; padding: 0 15px 15px; transition: max-height 0.4s ease-out, opacity 0.3s; opacity: 1; }
-.ai-briefing.collapsed .ai-briefing-content { max-height: 0; padding: 0 15px; opacity: 0; pointer-events: none; overflow: hidden; }
-.ai-briefing-text { font-size: 15px; line-height: 1.6; font-weight: 700; white-space: pre-wrap; word-wrap: break-word; letter-spacing: 0.02em; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; }
+/* ★槍リスト：4本分の固定スペース & グルグル */
+.yari-container {
+  min-height: 340px; /* 槍カード約80px×4 + 余白 */
+  position: relative;
+  width: 100%;
+}
+.list-loader {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  display: none;
+}
+.yari-container.loading .list-loader { display: block; }
+.yari-container.loading #yari-section { opacity: 0.3; }
 
-/* 槍リスト */
-.section { padding: 0 10px 6px; width: 100%; min-height: 100px; }
-.section-header-container { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; margin-top: 12px; border-left: 4px solid #1a73e8; padding-left: 8px; }
-.section-header { font-size: 14px; font-weight: 700; color: #202124; }
-.section-sub-header { font-size: 11px; color: #5f6368; font-weight: 600; }
-
-.yari-card { background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 6px; cursor: pointer; border: 2px solid transparent; width: 100%; position: relative; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.yari-card.active-cycle { border-color: #1a73e8; }
-.yari-card.wait-cycle { opacity: 0.5; filter: grayscale(0.5); border-color: #dadce0; }
-.yari-card.selected { border-color: #d93025 !important; background: #fce8e6; opacity: 1; filter: none; }
-.yari-top { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-.badge { font-size: 11px; font-weight: 700; border-radius: 5px; padding: 3px 8px; }
-.badge-wait { background: #e8f0fe; color: #1967d2; }
-.yari-price { font-size: 20px; font-weight: 700; flex: 1; }
-.yari-date { font-size: 11px; color: #9aa0a6; }
-.sell-val { font-size: 14px; color: #1e8e3e; font-weight: 700; }
-
-/* スケルトン & スピナー */
-@keyframes skeleton-shimmer { 0% { background-position: -200px 0; } 100% { background-position: calc(200px + 100%) 0; } }
-.skeleton { background: linear-gradient(90deg, #f0f2f5 25%, #e0e2e5 50%, #f0f2f5 75%); background-size: 200px 100%; animation: skeleton-shimmer 1.5s infinite linear; color: transparent !important; border-radius: 4px; display: inline-block; min-width: 40px; }
-.placeholder-card { background: #e8eaed; border: 1px dashed #bdc1c6; opacity: 0.6; display: flex; align-items: center; justify-content: center; height: 74px; margin-bottom: 6px; border-radius: 10px; }
-.small-spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; display: inline-block; vertical-align: middle; }
-
-/* アクションバー */
-.action-bar { background: #e8f0fe; border-radius: 12px; padding: 14px; margin: 0 10px 8px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
-.action-bar.hidden { display: none; }
-.tab-container { display: flex; gap: 5px; margin-bottom: 12px; border-bottom: 1px solid #d1d9e6; }
-.tab-item { flex: 1; text-align: center; padding: 10px; font-size: 14px; font-weight: 700; color: #5f6368; cursor: pointer; }
-.tab-item.active-blue { color: #1a73e8; border-bottom: 3px solid #1a73e8; }
-.tab-item.active-red { color: #d93025; border-bottom: 3px solid #d93025; }
-.action-area.hidden { display: none !important; }
-.action-buttons { display: flex; gap: 10px; margin-top: 12px; }
-.btn-cancel, .btn-confirm { flex: 1; padding: 12px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; border: none; transition: opacity 0.2s; }
-.btn-cancel { background: #fff; color: #5f6368; border: 1px solid #dadce0; }
-.btn-confirm { background: #d93025; color: #fff; }
-.btn-blue { background: #1a73e8 !important; }
-.btn-confirm:disabled { opacity: 0.7; cursor: not-allowed; }
-
-.action-bar select, .action-bar input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #dadce0; font-size: 16px; margin-bottom: 8px; background: #fff; box-sizing: border-box; }
-.input-label-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4px; }
-.input-label { font-size: 11px; color: #5f6368; font-weight: 700; }
-.profit-preview { font-size: 12px; font-weight: 800; }
-
-.add-section { padding: 0 10px 20px; }
-.add-card { background: #fff; border-radius: 12px; padding: 14px; }
-.btn-add { width: 100%; background: #1a73e8; color: #fff; border: none; border-radius: 10px; padding: 14px; font-weight: 700; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-
+.big-spinner {
+  width: 50px; height: 50px;
+  border: 4px solid rgba(26, 115, 232, 0.1);
+  border-top: 4px solid #1a73e8;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* 槍カード */
+.yari-card { background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 6px; cursor: pointer; border: 2px solid transparent; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.2s; }
+.active-cycle { border-color: #1a73e8; }
+.selected { border-color: #d93025 !important; background: #fce8e6; }
+.yari-price { font-size: 20px; font-weight: 700; flex: 1; }
+
+/* その他UI */
+.sync-btn { cursor: pointer; position: relative; }
+.spinning { animation: spin 1s linear infinite; pointer-events: none; }
+.notification-dot { display: none; position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #ff5252; border-radius: 50%; border: 2px solid #1a73e8; }
+.hidden { display: none !important; }
 .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #202124; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity 0.3s; z-index: 100; pointer-events: none; }
 .toast.show { opacity: 1; }
 </style>
 </head>
-<body>
-
-<div class="header">
+<body class="loading"> <div class="header">
   <div class="header-title">三浦司令室</div>
   <div class="header-right">
-    <span class="sync-btn" id="sync-icon" onclick="manualSync()">
-      🔄<span id="sync-badge" class="notification-dot"></span>
-    </span>
-    <div class="header-price" id="btc-price">loading...</div>
+    <span class="sync-btn" id="sync-icon" onclick="manualSync()">🔄<span id="sync-badge" class="notification-dot"></span></span>
+    <div class="header-price" id="btc-price">---</div>
   </div>
 </div>
 
-<div class="dashboard-container">
-  <div class="dash-header">
-    <span class="dash-title">管制塔 ステータス</span>
-    <span class="dash-time" id="dash-lastUpdate">---</span>
+<div class="dashboard-container" id="dash-board">
+  <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+    <span style="font-size: 12px; font-weight: 700; color: #1a73e8;">管制塔</span>
+    <span id="dash-lastUpdate" style="font-size: 10px; color: #9aa0a6;">---</span>
   </div>
   <div class="dash-grid">
     <div class="dash-item"><div class="dash-label">総資産</div><div class="dash-value" id="dash-totalUsd"></div></div>
-    <div class="dash-item"><div class="dash-label">資産前日比</div><div class="dash-value" id="dash-diffYesterday"></div></div>
-    <div class="dash-item"><div class="dash-label">資産年初比</div><div class="dash-value" id="dash-diffYearly"></div></div>
+    <div class="dash-item"><div class="dash-label">前日比</div><div class="dash-value" id="dash-diffYesterday"></div></div>
+    <div class="dash-item"><div class="dash-label">年初比</div><div class="dash-value" id="dash-diffYearly"></div></div>
     <div class="dash-item"><div class="dash-label">昨日の利益</div><div class="dash-value plus" id="dash-interestYesterday"></div></div>
     <div class="dash-item"><div class="dash-label">今月の利益</div><div class="dash-value plus" id="dash-interestMonthly"></div></div>
     <div class="dash-item"><div class="dash-label">今年の利益</div><div class="dash-value plus" id="dash-interestYearly"></div></div>
   </div>
 </div>
 
-<div class="ai-briefing collapsed" id="ai-briefing-box">
-  <div class="ai-briefing-header" onclick="toggleAI()">
-    <span class="ai-briefing-label">⚡ AI短評 <span id="ai-time" style="font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; margin-left: 8px;"></span><span id="ai-dot" class="ai-dot"></span></span>
-    <span class="ai-toggle-icon" id="ai-toggle-icon">▼</span>
-  </div>
-  <div class="ai-briefing-content"><div class="ai-briefing-text" id="ai-comment"></div></div>
-</div>
-
 <div class="section">
-  <div class="section-header-container">
-    <span class="section-header">保有槍部隊</span>
-    <span class="section-sub-header" id="yari-stats-header">読込中...</span>
+  <div style="display: flex; justify-content: space-between; margin-bottom: 8px; border-left: 4px solid #1a73e8; padding-left: 8px;">
+    <span style="font-size: 14px; font-weight: 700;">槍部隊</span>
+    <span id="yari-stats-header" style="font-size: 11px; color: #5f6368;">待機中...</span>
   </div>
-  <div id="yari-section"></div>
-</div>
-
-<div class="action-bar hidden" id="action-bar">
-  <div class="tab-container">
-    <div id="tab-update" class="tab-item" onclick="switchTab('update')">情報更新</div>
-    <div id="tab-sell" class="tab-item" onclick="switchTab('sell')">売却</div>
-  </div>
-  <div id="action-title" style="font-size:12px; margin-bottom:10px; color:#5f6368; font-weight:700;"></div>
-  
-  <div id="area-update" class="action-area hidden">
-      <div class="input-label">約定価格 ($)</div>
-      <select id="new-yari-price"></select>
-      <div class="input-label">数量 (BTC)</div>
-      <input type="number" id="new-yari-qty" step="0.0001" inputmode="decimal">
-      <div class="action-buttons">
-        <button class="btn-cancel" onclick="clearSelection()">取消</button>
-        <button class="btn-confirm btn-blue" onclick="confirmUpdateInfo()">情報を確定</button>
-      </div>
-  </div> 
-  
-  <div id="area-sell" class="action-area hidden">
-      <div class="input-label-row">
-          <div class="input-label">売却価格 ($)</div>
-          <div id="profit-preview" class="profit-preview"></div>
-      </div>
-      <select id="sell-yari-price" onchange="calcProfitPreview()"></select>
-      <div class="action-buttons">
-        <button class="btn-cancel" onclick="clearSelection()">取消</button>
-        <button class="btn-confirm" onclick="confirmSell()">売却済みにする</button>
-      </div>
-  </div>
-</div>
-
-<div class="add-section">
-  <div class="add-card">
-    <select id="in-price" style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px; border:1px solid #dadce0; font-size:16px;"></select>
-    <button class="btn-add" id="btn-add-yari" onclick="addYari()">約定追加</button>
+  <div class="yari-container loading" id="yari-container">
+    <div class="list-loader">
+      <div class="big-spinner"></div>
+      <div style="font-size: 12px; color: #1a73e8; font-weight: 700;">通信中...</div>
+    </div>
+    <div id="yari-section"></div>
   </div>
 </div>
 
@@ -188,162 +124,80 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 
 <script>
   var GAS_URL = "https://script.google.com/macros/s/AKfycbyPiAYrI1IDI5DPRtUFd--wOZBLY4FTwiovI4iSys_cmQm2LhqUvE5s1Rz5PJqfT5RRjQ/exec";
-  var selectedId = null, selectedOrigPrice = 0, selectedQty = 0;
-  var currentList = [];
   var btcPrice = 0;
 
-  function fmt(n) { 
-    if (n === 0 || n === "0" || !n || n === "確認中") return '<span style="color:#d93025; font-weight:800;">確認中</span>';
-    return "$" + Number(n).toLocaleString(); 
-  }
   function showToast(msg) { var t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"), 2500); }
-  function toggleAI() { document.getElementById("ai-briefing-box").classList.toggle("collapsed"); }
-
-  async function callGAS(params) {
-    const url = GAS_URL + "?" + new URLSearchParams(params);
-    const response = await fetch(url);
-    return await response.json();
-  }
 
   async function loadAllData() {
+    // 読み込み開始エフェクトON
+    document.body.classList.add("loading");
+    document.getElementById("yari-container").classList.add("loading");
+
     try {
-      const data = await callGAS({ action: "all" });
-      renderDashboard(data.dashboard);
-      renderList(data.list, data.dashboard);
-      update1730Badge();
-    } catch (e) { showToast("通信エラー"); }
+      const response = await fetch(GAS_URL + "?action=all");
+      const data = await response.json();
+      
+      // ダッシュボード反映
+      const d = data.dashboard;
+      document.getElementById('dash-lastUpdate').innerText = d.lastUpdate;
+      document.getElementById('dash-totalUsd').innerText = "$" + d.totalUsd;
+      
+      const setDiff = (id, val) => {
+        const el = document.getElementById('dash-' + id);
+        el.innerText = (val >= 0 ? "+$" : "-$") + Math.abs(val).toLocaleString();
+        el.className = "dash-value " + (val >= 0 ? "plus" : "minus");
+      };
+      setDiff('diffYesterday', parseFloat(d.diffYesterday));
+      setDiff('diffYearly', parseFloat(d.diffYearly));
+      
+      document.getElementById('dash-interestYesterday').innerText = "+$" + d.interestYesterday;
+      document.getElementById('dash-interestMonthly').innerText = "+$" + d.interestMonthly;
+      document.getElementById('dash-interestYearly').innerText = "+$" + d.interestYearly;
+
+      // 槍リスト反映
+      renderList(data.list, d);
+
+    } catch (e) { showToast("通信エラーだぜ"); }
+    finally {
+      // エフェクト解除
+      document.body.classList.remove("loading");
+      document.getElementById("yari-container").classList.remove("loading");
+    }
   }
 
-  function renderDashboard(data) {
-    if (!data) return;
-    document.getElementById('dash-lastUpdate').innerText = data.lastUpdate;
-    document.getElementById('dash-totalUsd').innerText = "$" + data.totalUsd;
-    ['diffYesterday', 'diffYearly'].forEach(k => {
-        const v = parseFloat(data[k]);
-        const el = document.getElementById('dash-' + k);
-        el.innerText = (v >= 0 ? "+$" : "-$") + Math.abs(v).toLocaleString();
-        el.className = "dash-value " + (v >= 0 ? "plus" : "minus");
-    });
-    document.getElementById('dash-interestYesterday').innerText = "+$" + data.interestYesterday;
-    document.getElementById('dash-interestMonthly').innerText = "+$" + data.interestMonthly;
-    document.getElementById('dash-interestYearly').innerText = "+$" + data.interestYearly;
-    if (data.aiComment) document.getElementById('ai-comment').innerText = data.aiComment;
-  }
-
-  function renderList(list, dashData) {
-    var now = new Date(), baseToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 30, 0);
-    list.sort((a, b) => (a.price === "確認中" ? -1 : b.price === "確認中" ? 1 : a.price - b.price));
-    currentList = list;
-    if (dashData) document.getElementById("yari-stats-header").innerText = `本数: ${dashData.yariCount}本 / 平均: $${dashData.avgPrice}`;
+  function renderList(list, d) {
+    document.getElementById("yari-stats-header").innerText = `本数: ${d.yariCount}本 / 平均: $${d.avgPrice}`;
     var html = '';
+    list.sort((a, b) => (a.price === "確認中" ? -1 : b.price === "確認中" ? 1 : a.price - b.price));
+    
     list.forEach((y, i) => {
-      var cycleClass = "active-cycle";
-      if (y.price !== "確認中") {
-        var acq = new Date(y.date), baseAcq = new Date(acq.getFullYear(), acq.getMonth(), acq.getDate(), 17, 30, 0);
-        if (acq >= baseAcq) baseAcq.setDate(baseAcq.getDate() + 1);
-        cycleClass = (Math.floor((baseToday - baseAcq) / 86400000) % 2 === 0) ? "active-cycle" : "wait-cycle";
-      }
-      html += `<div class="yari-card ${cycleClass} ${y.id === selectedId ? 'selected' : ''}" onclick="selectYari(${y.id},'${y.price}',${i+1},${y.qty})">`;
-      html += `<div class="yari-top"><span class="badge badge-wait">${i+1}位</span><span class="yari-price">${fmt(y.price)}</span><span class="yari-date">${y.date}</span></div>`;
-      html += `<div class="yari-sub"><span class="sell-val">数量：${y.qty} BTC</span></div></div>`;
+      html += `<div class="yari-card active-cycle">`;
+      html += `<div style="display:flex; align-items:center; gap:8px;">`;
+      html += `<span style="background:#e8f0fe; color:#1967d2; padding:2px 6px; border-radius:4px; font-size:10px;">${i+1}</span>`;
+      html += `<span class="yari-price">${y.price === "確認中" ? "確認中" : "$" + Number(y.price).toLocaleString()}</span>`;
+      html += `</div><div style="font-size:12px; color:#1e8e3e; font-weight:700; margin-top:4px;">数量: ${y.qty} BTC</div></div>`;
     });
     document.getElementById("yari-section").innerHTML = html;
   }
 
-  function selectYari(id, price, num, qty) {
-    if (selectedId === id) { clearSelection(); return; }
-    selectedId = id; selectedQty = qty;
-    selectedOrigPrice = (price === "確認中" || price === 0 || !price) ? btcPrice : Number(price);
-    
-    document.getElementById("action-bar").classList.remove("hidden");
-    document.getElementById("action-title").innerHTML = "槍" + num + " " + (price === "確認中" ? "価格未確定" : fmt(price));
-    document.getElementById("new-yari-qty").value = qty;
-
-    var baseP = Math.round(selectedOrigPrice / 500) * 500;
-    var opts = ""; for (var i = 10; i >= -10; i--) { var p = baseP + (i * 500); opts += `<option value="${p}" ${p===baseP?'selected':''}>${fmt(p)}</option>`; }
-    
-    document.getElementById('new-yari-price').innerHTML = opts;
-    document.getElementById('sell-yari-price').innerHTML = opts;
-
-    if (price === "確認中") switchTab('update'); else switchTab('sell');
-    calcProfitPreview();
-    renderList(currentList, null);
-  }
-
-  // ★ 損益シミュレーション計算
-  function calcProfitPreview() {
-      const sellPrice = Number(document.getElementById('sell-yari-price').value);
-      const diff = (sellPrice - selectedOrigPrice) * selectedQty;
-      const el = document.getElementById('profit-preview');
-      el.innerText = (diff >= 0 ? "+" : "-") + "$" + Math.abs(diff).toFixed(2) + " 変動";
-      el.style.color = (diff >= 0 ? "#1e8e3e" : "#d93025");
-  }
-
-  async function confirmUpdateInfo() {
-    const btn = document.querySelector("#area-update .btn-confirm");
-    btn.disabled = true; btn.innerHTML = '<span class="small-spinner"></span> 更新中...';
-    try {
-      const res = await callGAS({ action: "updateInfo", id: selectedId, price: document.getElementById('new-yari-price').value, qty: document.getElementById('new-yari-qty').value });
-      if (res.success) { await loadAllData(); clearSelection(); showToast("情報の研磨、完了だぜ！"); }
-    } catch (e) { showToast("通信失敗だぜ"); }
-    finally { btn.disabled = false; btn.innerText = "情報を確定"; }
-  }
-
-  async function confirmSell() {
-    const btn = document.querySelector("#area-sell .btn-confirm");
-    btn.disabled = true; btn.innerHTML = '<span class="small-spinner"></span> 売却処理中...';
-    try {
-      const res = await callGAS({ action: "sell", id: selectedId, price: document.getElementById('sell-yari-price').value });
-      if (res.success) { await loadAllData(); clearSelection(); showToast("利確完了！戦果を記録したぜ。"); }
-    } catch (e) { showToast("通信失敗だぜ"); }
-    finally { btn.disabled = false; btn.innerText = "売却済みにする"; }
-  }
-
-  async function addYari() {
-    const btn = document.getElementById("btn-add-yari");
-    btn.disabled = true; btn.innerHTML = '<span class="small-spinner"></span> 追撃中...';
-    try {
-      await callGAS({ action: "add", price: document.getElementById("in-price").value, date: new Date().toISOString() });
-      await loadAllData(); showToast("新しい槍を配備したぜ！");
-    } catch (e) { showToast("エラーだぜ"); }
-    finally { btn.disabled = false; btn.innerText = "約定追加"; }
-  }
-
   async function manualSync() {
     const icon = document.getElementById('sync-icon');
-    icon.classList.add('spinning'); showToast("同期中だぜ！");
-    try { await callGAS({ action: "sync" }); localStorage.setItem('last_sync_date', new Date().toLocaleDateString()); await loadAllData(); showToast("同期完了！"); }
-    catch (e) { showToast("通信エラー"); }
-    finally { icon.classList.remove('spinning'); }
-  }
-
-  function clearSelection() { selectedId = null; document.getElementById("action-bar").classList.add("hidden"); renderList(currentList, null); }
-  function switchTab(t) {
-    const isU = (t === 'update');
-    document.getElementById('area-update').classList.toggle('hidden', !isU);
-    document.getElementById('area-sell').classList.toggle('hidden', isU);
-    document.getElementById('tab-update').className = 'tab-item' + (isU ? ' active-blue' : '');
-    document.getElementById('tab-sell').className = 'tab-item' + (!isU ? ' active-red' : '');
+    icon.classList.add('spinning');
+    try {
+      await fetch(GAS_URL + "?action=sync");
+      showToast("同期完了！");
+      await loadAllData();
+    } finally { icon.classList.remove('spinning'); }
   }
 
   function fetchBtcPrice() {
     fetch("https://api.bitget.com/api/v2/spot/market/tickers?symbol=BTCUSDT").then(r => r.json()).then(d => {
         btcPrice = parseFloat(d.data[0].lastPr);
         document.getElementById("btc-price").textContent = "$" + btcPrice.toLocaleString();
-        var sel = document.getElementById("in-price"), base = Math.round(btcPrice / 500) * 500, h = "";
-        for(var i=10; i>=-10; i--) { var p = base + i*500; h += `<option value="${p}" ${i==0?'selected':''}>$${p.toLocaleString()}</option>`; }
-        sel.innerHTML = h;
     });
   }
 
-  function update1730Badge() {
-    const now = new Date(), time = now.getHours() * 100 + now.getMinutes(), today = now.toLocaleDateString(), lastSync = localStorage.getItem('last_sync_date');
-    const syncBadge = document.getElementById('sync-badge'), aiDot = document.getElementById('ai-dot');
-    if (time >= 1730 && lastSync !== today) { syncBadge.style.display = 'block'; aiDot.style.display = 'inline-block'; }
-    else { syncBadge.style.display = 'none'; aiDot.style.display = 'none'; }
-  }
-
-  window.onload = () => { fetchBtcPrice(); loadAllData(); setInterval(update1730Badge, 60000); };
+  window.onload = () => { fetchBtcPrice(); loadAllData(); };
 </script>
 </body>
 </html>
