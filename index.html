@@ -24,13 +24,13 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .sync-btn.spinning { animation: spin 1s linear infinite; pointer-events: none; }
 .notification-dot { display: none; position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #ff5252; border-radius: 50%; border: 2px solid #1a73e8; box-shadow: 0 0 5px rgba(255,82,82,0.8); }
 
-/* --- ダッシュボード キラキラエフェクト (Shimmer) --- */
+/* ダッシュボード & キラキラ */
 @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 .dashboard-container { background: #fff; border-radius: 12px; margin: 10px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
 .dash-title { font-size: 12px; font-weight: 700; color: #1a73e8; }
 .dash-time { font-size: 10px; color: #9aa0a6; }
-.dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: none; }
+.dash-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
 .dash-item { text-align: center; padding: 10px 0; border-right: 1px solid #f1f3f4; }
 .dash-item:nth-child(3n) { border-right: none; }
 .dash-item:nth-child(-n+3) { border-bottom: 1px solid #f1f3f4; }
@@ -38,80 +38,47 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .dash-value { font-size: 14px; font-weight: 800; color: #202124; min-height: 20px; white-space: nowrap; }
 .dash-value.plus { color: #1e8e3e; }
 .dash-value.minus { color: #d93025; }
-
-/* キラキラ適用クラス */
-.shimmer-active {
-  color: transparent !important;
-  background: linear-gradient(90deg, #f0f2f5 25%, #e0e2e5 50%, #f0f2f5 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite linear;
-  border-radius: 4px;
-}
+.shimmer-active { color: transparent !important; background: linear-gradient(90deg, #f0f2f5 25%, #e0e2e5 50%, #f0f2f5 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite linear; border-radius: 4px; }
 
 /* AI短評 */
 .ai-briefing { background: #1a73e8; color: #fff; margin: 0 10px 10px; border-radius: 10px; box-shadow: 0 4px 12px rgba(26,115,232,0.2); overflow: hidden; }
 .ai-briefing-header { padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
 .ai-briefing-label { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.9; }
 .ai-dot { display: none; width: 6px; height: 6px; background: #ff5252; border-radius: 50%; display: inline-block; margin-left: 5px; }
-.ai-briefing.collapsed .ai-toggle-icon { transform: rotate(-90deg); }
+/* ★追加：AI短評横の日時表示用 */
+.ai-update-time { font-size: 10px; font-weight: 600; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
 .ai-briefing-content { max-height: 2000px; padding: 0 15px 15px; transition: max-height 0.4s ease-out; }
 .ai-briefing.collapsed .ai-briefing-content { max-height: 0; padding: 0 15px; opacity: 0; overflow: hidden; }
 .ai-briefing-text { font-size: 15px; line-height: 1.6; font-weight: 700; white-space: pre-wrap; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; }
 
-/* --- 槍リスト 枠4つ分のグルグルエリア --- */
+/* 槍リスト & グルグル */
 .section { padding: 0 10px 6px; width: 100%; min-height: 100px; }
-.section-header-container { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; margin-top: 12px; border-left: 4px solid #1a73e8; padding-left: 8px; }
-.section-header { font-size: 14px; font-weight: 700; color: #202124; }
-
-.yari-container {
-  min-height: 320px; /* 槍約80px × 4本分 */
-  position: relative;
-  width: 100%;
-}
-.list-loader {
-  position: absolute; top: 120px; left: 50%; transform: translateX(-50%);
-  text-align: center; display: none;
-}
+.yari-container { min-height: 320px; position: relative; width: 100%; }
+.list-loader { position: absolute; top: 120px; left: 50%; transform: translateX(-50%); text-align: center; display: none; }
 .loading .list-loader { display: block; }
 .loading #yari-section { opacity: 0.2; pointer-events: none; }
+.big-spinner { width: 46px; height: 46px; border: 4px solid rgba(26, 115, 232, 0.1); border-top: 4px solid #1a73e8; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-.big-spinner {
-  width: 46px; height: 46px;
-  border: 4px solid rgba(26, 115, 232, 0.1);
-  border-top: 4px solid #1a73e8;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 10px;
-}
-
-/* 槍カードスタイル */
+/* 槍カード */
 .yari-card { background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 6px; cursor: pointer; border: 2px solid transparent; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .active-cycle { border-color: #1a73e8; }
-.wait-cycle { opacity: 0.5; filter: grayscale(0.5); border-color: #dadce0; }
-.selected { border-color: #d93025 !important; background: #fce8e6; opacity: 1; filter: none; }
-.yari-top { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-.badge { font-size: 11px; font-weight: 700; border-radius: 5px; padding: 3px 8px; }
-.badge-wait { background: #e8f0fe; color: #1967d2; }
+.selected { border-color: #d93025 !important; background: #fce8e6; }
 .yari-price { font-size: 20px; font-weight: 700; flex: 1; }
-.yari-date { font-size: 11px; color: #9aa0a6; }
-.sell-val { font-size: 14px; color: #1e8e3e; font-weight: 700; }
+.badge-wait { background: #e8f0fe; color: #1967d2; font-size: 11px; font-weight: 700; border-radius: 5px; padding: 3px 8px; }
 
-/* アクションバー */
+/* アクションバー & ボタン */
 .action-bar { background: #e8f0fe; border-radius: 12px; padding: 14px; margin: 0 10px 8px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
 .hidden { display: none !important; }
 .tab-container { display: flex; gap: 5px; margin-bottom: 12px; border-bottom: 1px solid #d1d9e6; }
 .tab-item { flex: 1; text-align: center; padding: 10px; font-size: 14px; font-weight: 700; color: #5f6368; cursor: pointer; }
 .active-blue { color: #1a73e8; border-bottom: 3px solid #1a73e8; }
 .active-red { color: #d93025; border-bottom: 3px solid #d93025; }
-.action-buttons { display: flex; gap: 10px; margin-top: 12px; }
-.btn-cancel, .btn-confirm { flex: 1; padding: 12px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; border: none; }
-.btn-cancel { background: #fff; color: #5f6368; border: 1px solid #dadce0; }
-.btn-confirm { background: #d93025; color: #fff; }
-.btn-blue { background: #1a73e8 !important; }
-select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #dadce0; font-size: 16px; margin-bottom: 8px; background: #fff; box-sizing: border-box; }
-.profit-preview { font-size: 12px; font-weight: 800; }
+.btn-blue { background: #1a73e8 !important; color:#fff; border:none; width:100%; height:50px; border-radius:10px; font-weight:700; font-size:16px; cursor:pointer; }
+.btn-confirm { background: #d93025; color: #fff; border: none; border-radius: 10px; padding: 12px; font-weight: 700; flex: 1; cursor: pointer; }
+.btn-cancel { background: #fff; color: #5f6368; border: 1px solid #dadce0; border-radius: 10px; padding: 12px; font-weight: 700; flex: 1; cursor: pointer; }
+select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #dadce0; font-size: 16px; margin-bottom: 8px; background: #fff; }
 
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #202124; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 14px; opacity: 0; transition: opacity 0.3s; z-index: 100; pointer-events: none; }
 .toast.show { opacity: 1; }
 </style>
@@ -121,9 +88,7 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
 <div class="header">
   <div class="header-title">三浦司令室</div>
   <div class="header-right">
-    <span class="sync-btn" id="sync-icon" onclick="manualSync()">
-      🔄<span id="sync-badge" class="notification-dot"></span>
-    </span>
+    <span class="sync-btn" id="sync-icon" onclick="manualSync()">🔄<span id="sync-badge" class="notification-dot"></span></span>
     <div class="header-price" id="btc-price">loading...</div>
   </div>
 </div>
@@ -145,7 +110,10 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
 
 <div class="ai-briefing collapsed" id="ai-briefing-box">
   <div class="ai-briefing-header" onclick="toggleAI()">
-    <span class="ai-briefing-label">⚡ AI短評 <span id="ai-time" style="font-size: 11px; font-weight: 600; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; margin-left: 8px;"></span><span id="ai-dot" class="ai-dot"></span></span>
+    <span class="ai-briefing-label">
+      ⚡ AI短評 
+      <span id="ai-time" class="ai-update-time">---</span> <span id="ai-dot" class="ai-dot"></span>
+    </span>
     <span class="ai-toggle-icon">▼</span>
   </div>
   <div class="ai-briefing-content"><div class="ai-briefing-text" id="ai-comment"></div></div>
@@ -157,10 +125,7 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
     <span id="yari-stats-header" style="font-size: 11px; color: #5f6368;">読込中...</span>
   </div>
   <div class="yari-container" id="yari-container">
-    <div class="list-loader">
-      <div class="big-spinner"></div>
-      <div style="font-size:12px; color:#1a73e8; font-weight:700;">分析中...</div>
-    </div>
+    <div class="list-loader"><div class="big-spinner"></div><div style="font-size:12px; color:#1a73e8; font-weight:700;">分析中...</div></div>
     <div id="yari-section"></div>
   </div>
 </div>
@@ -175,25 +140,19 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
       <div class="input-label" style="font-size:11px; font-weight:700; color:#5f6368; margin-bottom:4px;">約定価格 / 数量</div>
       <select id="new-yari-price"></select>
       <input type="number" id="new-yari-qty" step="0.0001" inputmode="decimal">
-      <div class="action-buttons">
-        <button class="btn-cancel" onclick="clearSelection()">取消</button>
-        <button class="btn-confirm btn-blue" onclick="confirmUpdateInfo()">確定</button>
-      </div>
+      <div class="action-buttons"><button class="btn-cancel" onclick="clearSelection()">取消</button><button class="btn-confirm btn-blue" onclick="confirmUpdateInfo()">確定</button></div>
   </div> 
   <div id="area-sell" class="action-area hidden">
-      <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span style="font-size:11px; font-weight:700; color:#5f6368;">売却価格</span><span id="profit-preview" class="profit-preview"></span></div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span style="font-size:11px; font-weight:700; color:#5f6368;">売却価格</span><span id="profit-preview" style="font-size:12px; font-weight:800;"></span></div>
       <select id="sell-yari-price" onchange="calcProfitPreview()"></select>
-      <div class="action-buttons">
-        <button class="btn-cancel" onclick="clearSelection()">取消</button>
-        <button class="btn-confirm" onclick="confirmSell()">売却完了</button>
-      </div>
+      <div class="action-buttons"><button class="btn-cancel" onclick="clearSelection()">取消</button><button class="btn-confirm" onclick="confirmSell()">売却完了</button></div>
   </div>
 </div>
 
 <div class="add-section" style="padding:0 10px 20px;">
   <div style="background:#fff; border-radius:12px; padding:14px; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
     <select id="in-price" style="margin-bottom:10px;"></select>
-    <button class="btn-confirm btn-blue" style="width:100%; height:50px; border-radius:10px; border:none; font-weight:700; font-size:16px;" onclick="addYari()">槍を新規配備</button>
+    <button class="btn-blue" onclick="addYari()">槍を新規配備</button>
   </div>
 </div>
 
@@ -201,14 +160,9 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
 
 <script>
   var GAS_URL = "https://script.google.com/macros/s/AKfycbyPiAYrI1IDI5DPRtUFd--wOZBLY4FTwiovI4iSys_cmQm2LhqUvE5s1Rz5PJqfT5RRjQ/exec";
-  var selectedId = null, selectedOrigPrice = 0, selectedQty = 0;
-  var currentList = [];
-  var btcPrice = 0;
+  var selectedId = null, selectedOrigPrice = 0, selectedQty = 0, currentList = [], btcPrice = 0;
 
-  function fmt(n) { 
-    if (n === 0 || n === "0" || !n || n === "確認中") return '<span style="color:#d93025; font-weight:800;">確認中</span>';
-    return "$" + Number(n).toLocaleString(); 
-  }
+  function fmt(n) { return (!n || n === "確認中" || n === 0) ? '<span style="color:#d93025; font-weight:800;">確認中</span>' : "$" + Number(n).toLocaleString(); }
   function showToast(msg) { var t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"), 2500); }
   function toggleAI() { document.getElementById("ai-briefing-box").classList.toggle("collapsed"); }
 
@@ -219,8 +173,8 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
   }
 
   function setVisualLoading(isLoading) {
-    const values = document.querySelectorAll('.dash-value');
-    values.forEach(v => v.classList.toggle('shimmer-active', isLoading));
+    const shimmers = document.querySelectorAll('.dash-value, .ai-update-time');
+    shimmers.forEach(v => v.classList.toggle('shimmer-active', isLoading));
     document.getElementById('yari-container').classList.toggle('loading', isLoading);
   }
 
@@ -228,114 +182,95 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
     setVisualLoading(true);
     try {
       const data = await callGAS({ action: "all" });
-      renderDashboard(data.dashboard);
-      renderList(data.list, data.dashboard);
+      const d = data.dashboard;
+      document.getElementById('dash-lastUpdate').innerText = d.lastUpdate;
+      document.getElementById('dash-totalUsd').innerText = "$" + d.totalUsd;
+      
+      // AI更新日時の成形（yyyy/MM/dd HH:mm から MM/dd HH:mm を抽出）
+      if (d.lastUpdate && d.lastUpdate.includes(" ")) {
+        const parts = d.lastUpdate.split(" ");
+        const dateParts = parts[0].split("/");
+        document.getElementById('ai-time').innerText = dateParts[1] + "/" + dateParts[2] + " " + parts[1];
+      }
+
+      const setDiff = (id, val) => {
+        const el = document.getElementById('dash-' + id);
+        el.innerText = (parseFloat(val) >= 0 ? "+$" : "-$") + Math.abs(val).toLocaleString();
+        el.className = "dash-value " + (parseFloat(val) >= 0 ? "plus" : "minus");
+      };
+      setDiff('diffYesterday', d.diffYesterday);
+      setDiff('diffYearly', d.diffYearly);
+      
+      document.getElementById('dash-interestYesterday').innerText = "+$" + d.interestYesterday;
+      document.getElementById('dash-interestMonthly').innerText = "+$" + d.interestMonthly;
+      document.getElementById('dash-interestYearly').innerText = "+$" + d.interestYearly;
+      if (d.aiComment) document.getElementById('ai-comment').innerText = d.aiComment;
+
+      currentList = data.list;
+      renderList(data.list, d);
       update1730Badge();
     } catch (e) { showToast("通信エラー"); }
     finally { setVisualLoading(false); }
   }
 
-  function renderDashboard(data) {
-    if (!data) return;
-    document.getElementById('dash-lastUpdate').innerText = data.lastUpdate;
-    document.getElementById('dash-totalUsd').innerText = "$" + data.totalUsd;
-    ['diffYesterday', 'diffYearly'].forEach(k => {
-        const v = parseFloat(data[k]);
-        const el = document.getElementById('dash-' + k);
-        el.innerText = (v >= 0 ? "+$" : "-$") + Math.abs(v).toLocaleString();
-        el.className = "dash-value " + (v >= 0 ? "plus" : "minus");
-    });
-    document.getElementById('dash-interestYesterday').innerText = "+$" + data.interestYesterday;
-    document.getElementById('dash-interestMonthly').innerText = "+$" + data.interestMonthly;
-    document.getElementById('dash-interestYearly').innerText = "+$" + data.interestYearly;
-    if (data.aiComment) document.getElementById('ai-comment').innerText = data.aiComment;
-  }
-
-  function renderList(list, dashData) {
-    var now = new Date(), baseToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 30, 0);
+  function renderList(list, d) {
+    document.getElementById("yari-stats-header").innerText = `本数: ${d.yariCount}本 / 平均: $${d.avgPrice}`;
     list.sort((a, b) => (a.price === "確認中" ? -1 : b.price === "確認中" ? 1 : a.price - b.price));
-    currentList = list;
-    if (dashData) document.getElementById("yari-stats-header").innerText = `本数: ${dashData.yariCount}本 / 平均: $${dashData.avgPrice}`;
-    var html = '';
-    list.forEach((y, i) => {
-      var cycleClass = "active-cycle";
-      if (y.price !== "確認中") {
-        var acq = new Date(y.date), baseAcq = new Date(acq.getFullYear(), acq.getMonth(), acq.getDate(), 17, 30, 0);
-        if (acq >= baseAcq) baseAcq.setDate(baseAcq.getDate() + 1);
-        cycleClass = (Math.floor((baseToday - baseAcq) / 86400000) % 2 === 0) ? "active-cycle" : "wait-cycle";
-      }
-      html += `<div class="yari-card ${cycleClass} ${y.id === selectedId ? 'selected' : ''}" onclick='selectYari(${JSON.stringify(y).replace(/'/g,"&apos;")}, ${i+1})'>`;
-      html += `<div class="yari-top"><span class="badge badge-wait">${i+1}位</span><span class="yari-price">${fmt(y.price)}</span><span class="yari-date">${y.date}</span></div>`;
-      html += `<div class="yari-sub"><span class="sell-val">数量：${y.qty} BTC</span></div></div>`;
-    });
-    document.getElementById("yari-section").innerHTML = html;
+    document.getElementById("yari-section").innerHTML = list.map((y, i) => {
+      var cycle = (y.price !== "確認中") ? "active-cycle" : "wait-cycle";
+      return `<div class="yari-card ${cycle} ${y.id === selectedId ? 'selected' : ''}" onclick='selectYari(${JSON.stringify(y).replace(/'/g,"&apos;")}, ${i+1})'>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="badge-wait">${i+1}位</span>
+          <span class="yari-price">${fmt(y.price)}</span>
+          <span style="font-size:11px; color:#9aa0a6;">${y.date}</span>
+        </div>
+        <div style="font-size:12px; color:#1e8e3e; font-weight:700; margin-top:4px;">数量: ${y.qty} BTC</div>
+      </div>`;
+    }).join('');
   }
 
   function selectYari(y, num) {
     if (selectedId === y.id) { clearSelection(); return; }
     selectedId = y.id; selectedQty = y.qty;
     selectedOrigPrice = (y.price === "確認中" || y.price === 0 || !y.price) ? btcPrice : Number(y.price);
-    
     document.getElementById("action-bar").classList.remove("hidden");
     document.getElementById("action-title").innerHTML = "槍" + num + " " + (y.price === "確認中" ? "価格未確定" : fmt(y.price));
     document.getElementById("new-yari-qty").value = y.qty;
-
     var baseP = Math.round(selectedOrigPrice / 500) * 500;
-    var opts = Array.from({length: 21}, (_, i) => baseP + (10 - i) * 500)
-                    .map(p => `<option value="${p}" ${p===baseP?'selected':''}>${fmt(p)}</option>`).join('');
-    
+    var opts = Array.from({length: 21}, (_, i) => baseP + (10 - i) * 500).map(p => `<option value="${p}" ${p===baseP?'selected':''}>$${p.toLocaleString()}</option>`).join('');
     document.getElementById('new-yari-price').innerHTML = opts;
     document.getElementById('sell-yari-price').innerHTML = opts;
-
-    if (y.price === "確認中") switchTab('update'); else switchTab('sell');
-    calcProfitPreview();
-    renderList(currentList, null);
+    switchTab(y.price === "確認中" ? 'update' : 'sell');
+    calcProfitPreview(); renderList(currentList, {yariCount:0, avgPrice:0});
   }
 
   function calcProfitPreview() {
-      const sellPrice = Number(document.getElementById('sell-yari-price').value);
-      const diff = (sellPrice - selectedOrigPrice) * selectedQty;
-      const el = document.getElementById('profit-preview');
-      el.innerText = (diff >= 0 ? "+" : "-") + "$" + Math.abs(diff).toFixed(2) + " 変動";
-      el.style.color = (diff >= 0 ? "#1e8e3e" : "#d93025");
+    const sellPrice = Number(document.getElementById('sell-yari-price').value);
+    const diff = (sellPrice - selectedOrigPrice) * selectedQty;
+    const el = document.getElementById('profit-preview');
+    el.innerText = (diff >= 0 ? "+" : "-") + "$" + Math.abs(diff).toFixed(2) + " 変動";
+    el.style.color = (diff >= 0 ? "#1e8e3e" : "#d93025");
   }
 
-  async function confirmUpdateInfo() {
-    const btn = document.querySelector("#area-update .btn-confirm");
-    btn.disabled = true;
+  async function execAction(act, params) {
     try {
-      const res = await callGAS({ action: "updateInfo", id: selectedId, price: document.getElementById('new-yari-price').value, qty: document.getElementById('new-yari-qty').value });
-      if (res.success) { await loadAllData(); clearSelection(); showToast("情報の研磨、完了だぜ！"); }
+      const res = await callGAS({ action: act, ...params });
+      if (res.success || act === "add") { await loadAllData(); clearSelection(); showToast("完了だぜ！"); }
     } catch (e) { showToast("失敗だぜ"); }
-    finally { btn.disabled = false; }
   }
 
-  async function confirmSell() {
-    const btn = document.querySelector("#area-sell .btn-confirm");
-    btn.disabled = true;
-    try {
-      const res = await callGAS({ action: "sell", id: selectedId, price: document.getElementById('sell-yari-price').value });
-      if (res.success) { await loadAllData(); clearSelection(); showToast("利確完了！"); }
-    } catch (e) { showToast("失敗だぜ"); }
-    finally { btn.disabled = false; }
-  }
-
-  async function addYari() {
-    try {
-      await callGAS({ action: "add", price: document.getElementById("in-price").value, date: new Date().toISOString() });
-      await loadAllData(); showToast("新しい槍を配備したぜ！");
-    } catch (e) { showToast("エラーだぜ"); }
-  }
+  function confirmUpdateInfo() { execAction("updateInfo", { id: selectedId, price: document.getElementById('new-yari-price').value, qty: document.getElementById('new-yari-qty').value }); }
+  function confirmSell() { execAction("sell", { id: selectedId, price: document.getElementById('sell-yari-price').value }); }
+  function addYari() { execAction("add", { price: document.getElementById("in-price").value, date: new Date().toISOString() }); }
 
   async function manualSync() {
     const icon = document.getElementById('sync-icon');
     icon.classList.add('spinning');
     try { await callGAS({ action: "sync" }); localStorage.setItem('last_sync_date', new Date().toLocaleDateString()); await loadAllData(); showToast("同期完了！"); }
-    catch (e) { showToast("通信エラー"); }
     finally { icon.classList.remove('spinning'); }
   }
 
-  function clearSelection() { selectedId = null; document.getElementById("action-bar").classList.add("hidden"); renderList(currentList, null); }
+  function clearSelection() { selectedId = null; document.getElementById("action-bar").classList.add("hidden"); renderList(currentList, {yariCount:0, avgPrice:0}); }
   function switchTab(t) {
     const isU = (t === 'update');
     document.getElementById('area-update').classList.toggle('hidden', !isU);
@@ -349,16 +284,16 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
         btcPrice = parseFloat(d.data[0].lastPr);
         document.getElementById("btc-price").textContent = "$" + btcPrice.toLocaleString();
         const base = Math.round(btcPrice / 500) * 500;
-        document.getElementById("in-price").innerHTML = Array.from({length: 21}, (_, i) => base + (10 - i) * 500)
-                                   .map(p => `<option value="${p}" ${p==base?'selected':''}>$${p.toLocaleString()}</option>`).join('');
+        document.getElementById("in-price").innerHTML = Array.from({length: 21}, (_, i) => base + (10 - i) * 500).map(p => `<option value="${p}" ${p===base?'selected':''}>$${p.toLocaleString()}</option>`).join('');
     });
   }
 
   function update1730Badge() {
     const now = new Date(), time = now.getHours() * 100 + now.getMinutes(), today = now.toLocaleDateString(), lastSync = localStorage.getItem('last_sync_date');
     const syncBadge = document.getElementById('sync-badge'), aiDot = document.getElementById('ai-dot');
-    if (time >= 1730 && lastSync !== today) { syncBadge.style.display = 'block'; if(aiDot) aiDot.style.display = 'inline-block'; }
-    else { syncBadge.style.display = 'none'; if(aiDot) aiDot.style.display = 'none'; }
+    const needSync = (time >= 1730 && lastSync !== today);
+    syncBadge.style.display = needSync ? 'block' : 'none';
+    if(aiDot) aiDot.style.display = needSync ? 'inline-block' : 'none';
   }
 
   window.onload = () => { fetchBtcPrice(); loadAllData(); setInterval(update1730Badge, 60000); };
