@@ -255,20 +255,29 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
     document.getElementById('dash-interestYearly').innerText = "+$" + data.interestYearly;
     if (data.aiComment) document.getElementById('ai-comment').innerText = data.aiComment;
 
-    // ★メッセージボックスの制御（🚨/⚠️/📢）
+    // ★メッセージボックス制御ロジックの最強化
     const msgBox = document.getElementById('message-box');
     const msgText = document.getElementById('msg-text');
     const msgIcon = document.getElementById('msg-icon');
     
-    if (data.systemMessage) {
+    if (data.systemMessage && data.systemMessage !== "") {
         msgBox.classList.remove('hidden');
         msgText.innerText = data.systemMessage;
-        if (data.systemMessage.includes("🚨") || data.systemMessage.includes("エラー")) {
-            msgBox.className = "msg-box msg-alert"; msgIcon.innerText = "🚨";
-        } else if (data.systemMessage.includes("⚠️") || data.systemMessage.includes("注意")) {
-            msgBox.className = "msg-box msg-warn"; msgIcon.innerText = "⚠️";
+
+        // アイコン判定
+        let icon = "📢";
+        if (data.systemMessage.includes("🚨")) icon = "🚨";
+        else if (data.systemMessage.includes("🗡️")) icon = "🗡️";
+        else if (data.systemMessage.includes("⚠️")) icon = "⚠️";
+        msgIcon.innerText = icon;
+
+        // クラス判定（背景色）
+        if (icon === "🚨") {
+            msgBox.className = "msg-box msg-alert";
+        } else if (icon === "⚠️" || icon === "🗡️") {
+            msgBox.className = "msg-box msg-warn";
         } else {
-            msgBox.className = "msg-box msg-info"; msgIcon.innerText = "📢";
+            msgBox.className = "msg-box msg-info";
         }
     } else {
         msgBox.classList.add('hidden');
