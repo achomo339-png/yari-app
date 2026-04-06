@@ -24,7 +24,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .sync-btn.spinning { animation: spin 1s linear infinite; pointer-events: none; }
 .notification-dot { display: none; position: absolute; top: 2px; right: 2px; width: 8px; height: 8px; background: #ff5252; border-radius: 50%; border: 2px solid #1a73e8; box-shadow: 0 0 5px rgba(255,82,82,0.8); }
 
-/* --- ダッシュボード キラキラエフェクト (Shimmer) --- */
+/* --- ダッシュボード --- */
 @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 .dashboard-container { background: #fff; border-radius: 12px; margin: 10px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
@@ -38,21 +38,12 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .dash-value { font-size: 14px; font-weight: 800; color: #202124; min-height: 20px; white-space: nowrap; }
 .dash-value.plus { color: #1e8e3e; }
 .dash-value.minus { color: #d93025; }
-
-/* キラキラ適用クラス */
-.shimmer-active {
-  color: transparent !important;
-  background: linear-gradient(90deg, #f0f2f5 25%, #e0e2e5 50%, #f0f2f5 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite linear;
-  border-radius: 4px;
-}
+.shimmer-active { color: transparent !important; background: linear-gradient(90deg, #f0f2f5 25%, #e0e2e5 50%, #f0f2f5 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite linear; border-radius: 4px; }
 
 /* AI短評 */
 .ai-briefing { background: #1a73e8; color: #fff; margin: 0 10px 10px; border-radius: 10px; box-shadow: 0 4px 12px rgba(26,115,232,0.2); overflow: hidden; }
 .ai-briefing-header { padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
 .ai-briefing-label { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.9; }
-/* ★更新日時表示用のスタイル */
 .ai-update-time { font-size: 10px; font-weight: 600; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; margin-left: 8px; vertical-align: middle; }
 .ai-dot { display: none; width: 6px; height: 6px; background: #ff5252; border-radius: 50%; display: inline-block; margin-left: 5px; }
 .ai-briefing.collapsed .ai-toggle-icon { transform: rotate(-90deg); }
@@ -60,33 +51,28 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .ai-briefing.collapsed .ai-briefing-content { max-height: 0; padding: 0 15px; opacity: 0; overflow: hidden; }
 .ai-briefing-text { font-size: 15px; line-height: 1.6; font-weight: 700; white-space: pre-wrap; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; }
 
-/* --- 槍リスト 枠4つ分のグルグルエリア --- */
+/* --- メッセージボックス (伝令板) --- */
+.msg-box { margin: 0 10px 10px; padding: 12px 15px; border-radius: 10px; display: flex; align-items: flex-start; gap: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: all 0.3s ease; border: 1px solid transparent; }
+.msg-info { background: #fff; border-color: #e8f0fe; }
+.msg-info .msg-icon { color: #1a73e8; }
+.msg-warn { background: #fff8e1; border-color: #ffe082; }
+.msg-warn .msg-icon { color: #f9a825; }
+.msg-alert { background: #fce8e6; border-color: #f8bbd0; }
+.msg-alert .msg-icon { color: #d93025; }
+.msg-icon { font-size: 20px; line-height: 1; margin-top: 2px; }
+.msg-content { flex: 1; }
+.msg-label { font-size: 10px; font-weight: 800; color: #5f6368; text-transform: uppercase; margin-bottom: 2px; }
+.msg-text { font-size: 13px; font-weight: 700; color: #202124; line-height: 1.4; }
+
+/* 槍リスト */
 .section { padding: 0 10px 6px; width: 100%; min-height: 100px; }
 .section-header-container { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; margin-top: 12px; border-left: 4px solid #1a73e8; padding-left: 8px; }
 .section-header { font-size: 14px; font-weight: 700; color: #202124; }
-
-.yari-container {
-  min-height: 320px; /* 槍約80px × 4本分 */
-  position: relative;
-  width: 100%;
-}
-.list-loader {
-  position: absolute; top: 120px; left: 50%; transform: translateX(-50%);
-  text-align: center; display: none;
-}
+.yari-container { min-height: 320px; position: relative; width: 100%; }
+.list-loader { position: absolute; top: 120px; left: 50%; transform: translateX(-50%); text-align: center; display: none; }
 .loading .list-loader { display: block; }
 .loading #yari-section { opacity: 0.2; pointer-events: none; }
-
-.big-spinner {
-  width: 46px; height: 46px;
-  border: 4px solid rgba(26, 115, 232, 0.1);
-  border-top: 4px solid #1a73e8;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 10px;
-}
-
-/* 槍カードスタイル */
+.big-spinner { width: 46px; height: 46px; border: 4px solid rgba(26, 115, 232, 0.1); border-top: 4px solid #1a73e8; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
 .yari-card { background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 6px; cursor: pointer; border: 2px solid transparent; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .active-cycle { border-color: #1a73e8; }
 .wait-cycle { opacity: 0.5; filter: grayscale(0.5); border-color: #dadce0; }
@@ -156,6 +142,14 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
   <div class="ai-briefing-content"><div class="ai-briefing-text" id="ai-comment"></div></div>
 </div>
 
+<div id="message-box" class="msg-box msg-info hidden">
+  <div class="msg-icon" id="msg-icon">📢</div>
+  <div class="msg-content">
+    <div class="msg-label" id="msg-label">System Message</div>
+    <div class="msg-text" id="msg-text">司令官、新しい伝令はないぜ。</div>
+  </div>
+</div>
+
 <div class="section">
   <div class="section-header-container">
     <span class="section-header">保有槍部隊</span>
@@ -177,7 +171,6 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
   </div>
   <div id="action-title" style="font-size:12px; margin-bottom:10px; color:#5f6368; font-weight:700;"></div>
   <div id="area-update" class="action-area hidden">
-      <div class="input-label" style="font-size:11px; font-weight:700; color:#5f6368; margin-bottom:4px;">約定価格 / 数量</div>
       <select id="new-yari-price"></select>
       <input type="number" id="new-yari-qty" step="0.0001" inputmode="decimal">
       <div class="action-buttons">
@@ -223,7 +216,6 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
     return await response.json();
   }
 
-  // ★エフェクトのON/OFF
   function setVisualLoading(isLoading) {
     const shimmers = document.querySelectorAll('.dash-value, .ai-update-time');
     shimmers.forEach(v => v.classList.toggle('shimmer-active', isLoading));
@@ -231,14 +223,14 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
   }
 
   async function loadAllData() {
-    setVisualLoading(true); // エフェクト開始
+    setVisualLoading(true);
     try {
       const data = await callGAS({ action: "all" });
       renderDashboard(data.dashboard);
       renderList(data.list, data.dashboard);
       update1730Badge();
     } catch (e) { showToast("通信エラー"); }
-    finally { setVisualLoading(false); } // エフェクト終了
+    finally { setVisualLoading(false); }
   }
 
   function renderDashboard(data) {
@@ -246,7 +238,6 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
     document.getElementById('dash-lastUpdate').innerText = data.lastUpdate;
     document.getElementById('dash-totalUsd').innerText = "$" + data.totalUsd;
     
-    // ★AI更新日時の成形（yyyy/MM/dd HH:mm から MM/dd HH:mm を抽出）
     if (data.lastUpdate && data.lastUpdate.includes(" ")) {
       const parts = data.lastUpdate.split(" ");
       const dateParts = parts[0].split("/");
@@ -263,6 +254,25 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
     document.getElementById('dash-interestMonthly').innerText = "+$" + data.interestMonthly;
     document.getElementById('dash-interestYearly').innerText = "+$" + data.interestYearly;
     if (data.aiComment) document.getElementById('ai-comment').innerText = data.aiComment;
+
+    // ★メッセージボックスの制御（🚨/⚠️/📢）
+    const msgBox = document.getElementById('message-box');
+    const msgText = document.getElementById('msg-text');
+    const msgIcon = document.getElementById('msg-icon');
+    
+    if (data.systemMessage) {
+        msgBox.classList.remove('hidden');
+        msgText.innerText = data.systemMessage;
+        if (data.systemMessage.includes("🚨") || data.systemMessage.includes("エラー")) {
+            msgBox.className = "msg-box msg-alert"; msgIcon.innerText = "🚨";
+        } else if (data.systemMessage.includes("⚠️") || data.systemMessage.includes("注意")) {
+            msgBox.className = "msg-box msg-warn"; msgIcon.innerText = "⚠️";
+        } else {
+            msgBox.className = "msg-box msg-info"; msgIcon.innerText = "📢";
+        }
+    } else {
+        msgBox.classList.add('hidden');
+    }
   }
 
   function renderList(list, dashData) {
@@ -272,14 +282,12 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
     if (dashData) document.getElementById("yari-stats-header").innerText = `本数: ${dashData.yariCount}本 / 平均: $${dashData.avgPrice}`;
     var html = '';
     list.forEach((y, i) => {
-      // --- ★ベースの判定ロジックを完全維持 ---
       var cycleClass = "active-cycle";
       if (y.price !== "確認中") {
         var acq = new Date(y.date), baseAcq = new Date(acq.getFullYear(), acq.getMonth(), acq.getDate(), 17, 30, 0);
         if (acq >= baseAcq) baseAcq.setDate(baseAcq.getDate() + 1);
         cycleClass = (Math.floor((baseToday - baseAcq) / 86400000) % 2 === 0) ? "active-cycle" : "wait-cycle";
       }
-      // ---------------------------------------
       html += `<div class="yari-card ${cycleClass} ${y.id === selectedId ? 'selected' : ''}" onclick='selectYari(${JSON.stringify(y).replace(/'/g,"&apos;")}, ${i+1})'>`;
       html += `<div class="yari-top"><span class="badge badge-wait">${i+1}位</span><span class="yari-price">${fmt(y.price)}</span><span class="yari-date">${y.date}</span></div>`;
       html += `<div class="yari-sub"><span class="sell-val">数量：${y.qty} BTC</span></div></div>`;
@@ -291,18 +299,13 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
     if (selectedId === y.id) { clearSelection(); return; }
     selectedId = y.id; selectedQty = y.qty;
     selectedOrigPrice = (y.price === "確認中" || y.price === 0 || !y.price) ? btcPrice : Number(y.price);
-    
     document.getElementById("action-bar").classList.remove("hidden");
     document.getElementById("action-title").innerHTML = "槍" + num + " " + (y.price === "確認中" ? "価格未確定" : fmt(y.price));
     document.getElementById("new-yari-qty").value = y.qty;
-
     var baseP = Math.round(selectedOrigPrice / 500) * 500;
-    var opts = Array.from({length: 21}, (_, i) => baseP + (10 - i) * 500)
-                    .map(p => `<option value="${p}" ${p===baseP?'selected':''}>${fmt(p)}</option>`).join('');
-    
+    var opts = Array.from({length: 21}, (_, i) => baseP + (10 - i) * 500).map(p => `<option value="${p}" ${p===baseP?'selected':''}>${fmt(p)}</option>`).join('');
     document.getElementById('new-yari-price').innerHTML = opts;
     document.getElementById('sell-yari-price').innerHTML = opts;
-
     if (y.price === "確認中") switchTab('update'); else switchTab('sell');
     calcProfitPreview();
     renderList(currentList, null);
@@ -317,23 +320,19 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
   }
 
   async function confirmUpdateInfo() {
-    const btn = document.querySelector("#area-update .btn-confirm");
-    btn.disabled = true;
+    const btn = document.querySelector("#area-update .btn-confirm"); btn.disabled = true;
     try {
       const res = await callGAS({ action: "updateInfo", id: selectedId, price: document.getElementById('new-yari-price').value, qty: document.getElementById('new-yari-qty').value });
       if (res.success) { await loadAllData(); clearSelection(); showToast("情報の研磨、完了だぜ！"); }
-    } catch (e) { showToast("通信失敗だぜ"); }
-    finally { btn.disabled = false; }
+    } catch (e) { showToast("通信失敗だぜ"); } finally { btn.disabled = false; }
   }
 
   async function confirmSell() {
-    const btn = document.querySelector("#area-sell .btn-confirm");
-    btn.disabled = true;
+    const btn = document.querySelector("#area-sell .btn-confirm"); btn.disabled = true;
     try {
       const res = await callGAS({ action: "sell", id: selectedId, price: document.getElementById('sell-yari-price').value });
       if (res.success) { await loadAllData(); clearSelection(); showToast("利確完了！戦果を記録したぜ。"); }
-    } catch (e) { showToast("通信失敗だぜ"); }
-    finally { btn.disabled = false; }
+    } catch (e) { showToast("通信失敗だぜ"); } finally { btn.disabled = false; }
   }
 
   async function addYari() {
@@ -344,15 +343,12 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
   }
 
   async function manualSync() {
-    const icon = document.getElementById('sync-icon');
-    icon.classList.add('spinning');
+    const icon = document.getElementById('sync-icon'); icon.classList.add('spinning');
     try {
       await callGAS({ action: "sync" });
       localStorage.setItem('last_sync_date', new Date().toLocaleDateString());
-      await loadAllData();
-      showToast("同期完了！");
-    } catch (e) { showToast("通信エラー"); }
-    finally { icon.classList.remove('spinning'); }
+      await loadAllData(); showToast("同期完了！");
+    } catch (e) { showToast("通信エラー"); } finally { icon.classList.remove('spinning'); }
   }
 
   function clearSelection() { selectedId = null; document.getElementById("action-bar").classList.add("hidden"); renderList(currentList, null); }
@@ -369,8 +365,7 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
         btcPrice = parseFloat(d.data[0].lastPr);
         document.getElementById("btc-price").textContent = "$" + btcPrice.toLocaleString();
         const base = Math.round(btcPrice / 500) * 500;
-        document.getElementById("in-price").innerHTML = Array.from({length: 21}, (_, i) => base + (10 - i) * 500)
-                                   .map(p => `<option value="${p}" ${p===base?'selected':''}>$${p.toLocaleString()}</option>`).join('');
+        document.getElementById("in-price").innerHTML = Array.from({length: 21}, (_, i) => base + (10 - i) * 500).map(p => `<option value="${p}" ${p===base?'selected':''}>$${p.toLocaleString()}</option>`).join('');
     });
   }
 
