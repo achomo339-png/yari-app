@@ -52,7 +52,7 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .ai-briefing-text { font-size: 15px; line-height: 1.6; font-weight: 700; white-space: pre-wrap; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; }
 
 /* --- メッセージボックス (伝令板) --- */
-.msg-box { margin: 0 10px 10px; padding: 12px 15px; border-radius: 10px; display: flex; align-items: flex-start; gap: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: all 0.3s ease; border: 1px solid transparent; }
+.msg-box { margin: 0 10px 10px; padding: 12px 15px; border-radius: 10px; display: flex; align-items: flex-start; gap: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: all 0.3s ease, opacity 0.3s ease, max-height 0.3s ease; border: 1px solid transparent; position: relative; }
 .msg-info { background: #fff; border-color: #e8f0fe; }
 .msg-info .msg-icon { color: #1a73e8; }
 .msg-warn { background: #fff8e1; border-color: #ffe082; }
@@ -62,7 +62,14 @@ html, body { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Helvet
 .msg-icon { font-size: 20px; line-height: 1; margin-top: 2px; }
 .msg-content { flex: 1; }
 .msg-label { font-size: 10px; font-weight: 800; color: #5f6368; text-transform: uppercase; margin-bottom: 2px; }
-.msg-text { font-size: 13px; font-weight: 700; color: #202124; line-height: 1.4; }
+.msg-text { font-size: 13px; font-weight: 700; color: #202124; line-height: 1.4; padding-right: 15px; }
+
+/* バツボタン */
+.msg-close { cursor: pointer; font-size: 20px; line-height: 1; color: #9aa0a6; padding: 4px; margin-top: -4px; margin-right: -4px; transition: color 0.2s; user-select: none; }
+.msg-close:hover { color: #5f6368; }
+
+/* 閉じる際のアニメーション用 */
+.msg-hidden-fade { opacity: 0; max-height: 0; margin-top: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; overflow: hidden; pointer-events: none; }
 
 /* 槍リスト */
 .section { padding: 0 10px 6px; width: 100%; min-height: 100px; }
@@ -148,6 +155,7 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
     <div class="msg-label" id="msg-label">System Message</div>
     <div class="msg-text" id="msg-text">司令官、新しい伝令はないぜ。</div>
   </div>
+  <div class="msg-close" onclick="closeMsgBox()">×</div>
 </div>
 
 <div class="section">
@@ -202,6 +210,7 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
   var selectedId = null, selectedOrigPrice = 0, selectedQty = 0;
   var currentList = [];
   var btcPrice = 0;
+  var isMsgClosedManual = false; // 手動で閉じたフラグ
 
   function fmt(n) { 
     if (n === 0 || n === "0" || !n || n === "確認中") return '<span style="color:#d93025; font-weight:800;">確認中</span>';
@@ -209,6 +218,14 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
   }
   function showToast(msg) { var t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"), 2500); }
   function toggleAI() { document.getElementById("ai-briefing-box").classList.toggle("collapsed"); }
+
+  // メッセージボックスを閉じる処理
+  function closeMsgBox() {
+    const msgBox = document.getElementById('message-box');
+    msgBox.classList.add('msg-hidden-fade');
+    isMsgClosedManual = true;
+    setTimeout(() => msgBox.classList.add('hidden'), 300);
+  }
 
   async function callGAS(params) {
     const url = GAS_URL + "?" + new URLSearchParams(params);
@@ -255,32 +272,29 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
     document.getElementById('dash-interestYearly').innerText = "+$" + data.interestYearly;
     if (data.aiComment) document.getElementById('ai-comment').innerText = data.aiComment;
 
-    // ★メッセージボックス制御ロジックの最強化
+    // メッセージボックス制御
     const msgBox = document.getElementById('message-box');
     const msgText = document.getElementById('msg-text');
     const msgIcon = document.getElementById('msg-icon');
     
     if (data.systemMessage && data.systemMessage !== "") {
-        msgBox.classList.remove('hidden');
-        msgText.innerText = data.systemMessage;
+        if (!isMsgClosedManual) {
+            msgBox.classList.remove('hidden', 'msg-hidden-fade');
+            msgText.innerText = data.systemMessage;
 
-        // アイコン判定
-        let icon = "📢";
-        if (data.systemMessage.includes("🚨")) icon = "🚨";
-        else if (data.systemMessage.includes("🗡️")) icon = "🗡️";
-        else if (data.systemMessage.includes("⚠️")) icon = "⚠️";
-        msgIcon.innerText = icon;
+            let icon = "📢";
+            if (data.systemMessage.includes("🚨")) icon = "🚨";
+            else if (data.systemMessage.includes("🗡️")) icon = "🗡️";
+            else if (data.systemMessage.includes("⚠️")) icon = "⚠️";
+            msgIcon.innerText = icon;
 
-        // クラス判定（背景色）
-        if (icon === "🚨") {
-            msgBox.className = "msg-box msg-alert";
-        } else if (icon === "⚠️" || icon === "🗡️") {
-            msgBox.className = "msg-box msg-warn";
-        } else {
-            msgBox.className = "msg-box msg-info";
+            if (icon === "🚨") msgBox.className = "msg-box msg-alert";
+            else if (icon === "⚠️" || icon === "🗡️") msgBox.className = "msg-box msg-warn";
+            else msgBox.className = "msg-box msg-info";
         }
     } else {
         msgBox.classList.add('hidden');
+        isMsgClosedManual = false; // 内容が空ならフラグリセット
     }
   }
 
