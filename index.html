@@ -219,11 +219,20 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
   function showToast(msg) { var t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"), 2500); }
   function toggleAI() { document.getElementById("ai-briefing-box").classList.toggle("collapsed"); }
 
-  // メッセージボックスを閉じる処理
-  function closeMsgBox() {
+  // ★メッセージボックスを閉じる ＆ シートのI2をクリアする処理
+  async function closeMsgBox() {
     const msgBox = document.getElementById('message-box');
-    msgBox.classList.add('msg-hidden-fade');
+    msgBox.classList.add('msg-hidden-fade'); // アニメーション開始
     isMsgClosedManual = true;
+
+    try {
+      // GASに「I2セルをクリアせよ」と命令を送るぜ
+      await callGAS({ action: "clearMessage" });
+      showToast("伝令確認。I2を浄化したぜ！");
+    } catch (e) {
+      console.error("シートのメッセージ消去に失敗したぜ", e);
+    }
+
     setTimeout(() => msgBox.classList.add('hidden'), 300);
   }
 
@@ -272,7 +281,6 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
     document.getElementById('dash-interestYearly').innerText = "+$" + data.interestYearly;
     if (data.aiComment) document.getElementById('ai-comment').innerText = data.aiComment;
 
-    // メッセージボックス制御
     const msgBox = document.getElementById('message-box');
     const msgText = document.getElementById('msg-text');
     const msgIcon = document.getElementById('msg-icon');
@@ -294,7 +302,7 @@ select, input { width: 100%; padding: 12px; border-radius: 10px; border: 1px sol
         }
     } else {
         msgBox.classList.add('hidden');
-        isMsgClosedManual = false; // 内容が空ならフラグリセット
+        isMsgClosedManual = false; 
     }
   }
 
